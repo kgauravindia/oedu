@@ -17,8 +17,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($username) || empty($password)) {
         $error = 'Please enter both username and password.';
     } else {
-        $stmt = $pdo->prepare("SELECT * FROM `admin_users` WHERE (`username` = :u OR `email` = :u) AND `status` = 'ACTIVE' LIMIT 1");
-        $stmt->execute([':u' => $username]);
+        $stmt = $pdo->prepare("SELECT * FROM `admin_users` WHERE (`username` = :u OR `email` = :e) AND `status` = 'ACTIVE' LIMIT 1");
+        $stmt->execute([':u' => $username, ':e' => $username]);
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password'])) {
