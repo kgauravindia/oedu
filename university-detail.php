@@ -25,12 +25,21 @@ if ($slug) {
 $univ = $stmt->fetch();
 
 if (!$univ) {
-    // Check institutions table as fallback
-    $stmtFallback = $pdo->prepare("SELECT * FROM institutions WHERE slug = :slug LIMIT 1");
-    $stmtFallback->execute([':slug' => $slug]);
-    $inst = $stmtFallback->fetch();
-    if ($inst) {
-        header("Location: institution-detail.php?slug=" . urlencode($slug));
+    // Check college table as fallback
+    $stmtCol = $pdo->prepare("SELECT slug FROM college WHERE slug = :slug LIMIT 1");
+    $stmtCol->execute([':slug' => $slug]);
+    $colSlug = $stmtCol->fetchColumn();
+    if ($colSlug) {
+        header("Location: college-detail.php?slug=" . urlencode($colSlug));
+        exit;
+    }
+
+    // Check institute table as fallback
+    $stmtInst = $pdo->prepare("SELECT slug FROM institute WHERE slug = :slug LIMIT 1");
+    $stmtInst->execute([':slug' => $slug]);
+    $instSlug = $stmtInst->fetchColumn();
+    if ($instSlug) {
+        header("Location: institute-detail.php?slug=" . urlencode($instSlug));
         exit;
     }
 

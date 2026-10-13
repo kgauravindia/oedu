@@ -29,8 +29,8 @@ if ($selectedState) {
     $stateDistricts = $distStmt->fetchAll(PDO::FETCH_COLUMN);
 }
 
-// 4. Query Institutions
-$sql = "SELECT * FROM institutions WHERE 1=1";
+// 4. Query Premier Universities from official AISHE table
+$sql = "SELECT * FROM university WHERE status = 'ACTIVE'";
 $params = [];
 
 if ($selectedState) {
@@ -39,36 +39,22 @@ if ($selectedState) {
 }
 
 if ($selectedDistrict) {
-    $sql .= " AND (district LIKE :district OR city LIKE :district)";
+    $sql .= " AND district LIKE :district";
     $params[':district'] = "%{$selectedDistrict}%";
 }
 
-if ($selectedCategory === 'central') {
-    $sql .= " AND subtype LIKE '%Central%'";
-} elseif ($selectedCategory === 'national') {
-    $sql .= " AND subtype LIKE '%National Importance%'";
-} elseif ($selectedCategory === 'state') {
-    $sql .= " AND subtype LIKE '%State%'";
-} elseif ($selectedCategory === 'college') {
-    $sql .= " AND type = 'college'";
-} elseif ($selectedCategory === 'deemed') {
-    $sql .= " AND (subtype LIKE '%Deemed%' OR affiliation LIKE '%Deemed%')";
-} else {
-    $sql .= " AND type IN ('university', 'college')";
-}
-
 if ($searchKeyword) {
-    $sql .= " AND (name LIKE :q OR city LIKE :q OR state LIKE :q OR affiliation LIKE :q OR subtype LIKE :q)";
+    $sql .= " AND (name LIKE :q OR state LIKE :q OR district LIKE :q OR aishe_code LIKE :q)";
     $params[':q'] = "%{$searchKeyword}%";
 }
 
-$sql .= " ORDER BY is_verified DESC, rating DESC, reviews_count DESC LIMIT 12";
+$sql .= " ORDER BY state ASC, name ASC LIMIT 12";
 $instStmt = $pdo->prepare($sql);
 $instStmt->execute($params);
-$institutions = $instStmt->fetchAll();
+$universities = $instStmt->fetchAll();
 
 // 5. State-wise University Counts for Quick Directory
-$stateCountStmt = $pdo->query("SELECT state, COUNT(*) as c FROM institutions WHERE type IN ('university', 'college') GROUP BY state");
+$stateCountStmt = $pdo->query("SELECT state, COUNT(*) as c FROM university GROUP BY state");
 $stateCounts = $stateCountStmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
 $pageTitle = 'Oedu.in — National Higher Education Directory of India | 72,000+ Institutions';
@@ -217,10 +203,10 @@ require_once __DIR__ . '/includes/header.php';
     <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
         <div>
             <h2 style="font-size: 1.45rem; font-weight: 800; color: #111827;">
-                Universities & Colleges in India <?= $selectedState ? "— " . htmlspecialchars($selectedState) : '' ?>
+                Universities in India <?= $selectedState ? "— " . htmlspecialchars($selectedState) : '' ?>
             </h2>
             <p style="font-size: 0.85rem; color: #6B7280;">
-                Showing <?= count($institutions) ?> verified higher education institutions.
+                Showing <?= count($universities) ?> verified universities from official AISHE national directory.
             </p>
         </div>
         <div style="display: flex; gap: 8px;">
@@ -230,79 +216,72 @@ require_once __DIR__ . '/includes/header.php';
         </div>
     </div>
 
-    <?php if (empty($institutions)): ?>
+    <?php if (empty($universities)): ?>
         <div style="background: #FFFFFF; border: 1.5px solid var(--border-color); border-radius: var(--radius-md); padding: 40px 16px; text-align: center;">
             <div style="font-size: 2.2rem; margin-bottom: 8px;">🏛️</div>
-            <h3 style="font-size: 1.1rem; font-weight: 800; color: #111827; margin-bottom: 4px;">No Institutions Found</h3>
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: #111827; margin-bottom: 4px;">No Universities Found</h3>
             <p style="font-size: 0.85rem; color: #6B7280; margin-bottom: 16px;">
-                We are actively onboarding more colleges in <?= htmlspecialchars($selectedState ?: 'this area') ?> from the official database.
+                No universities matched in <?= htmlspecialchars($selectedState ?: 'this area') ?>. Try resetting your search filter.
             </p>
             <a href="index.php" class="btn btn-primary" style="font-size: 0.85rem;">View All Premier Universities</a>
         </div>
     <?php else: ?>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 18px;">
-            <?php foreach ($institutions as $inst): 
-                $facilities = json_decode($inst['facilities'] ?? '[]', true) ?: [];
-            ?>
+            <?php foreach ($universities as $u): ?>
                 <div style="background: #FFFFFF; border: 1.5px solid #E5E7EB; border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: border-color 0.2s, transform 0.15s;">
                     <div>
                         <!-- Header: Name & Type -->
                         <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px;">
                             <div style="width: 44px; height: 44px; border-radius: 8px; background: var(--orange-light); border: 1px solid var(--orange-border); color: var(--orange-dark); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; font-weight: 800;">
-                                <?= $inst['type'] === 'college' ? '🎓' : '🏛️' ?>
+                                🏛️
                             </div>
                             <div style="flex: 1; min-width: 0;">
                                 <h3 style="font-size: 1.05rem; font-weight: 800; color: #111827; line-height: 1.3; margin-bottom: 2px;">
-                                    <a href="institution-detail.php?slug=<?= urlencode($inst['slug']) ?>"><?= htmlspecialchars($inst['name']) ?></a>
+                                    <a href="university-detail.php?slug=<?= urlencode($u['slug']) ?>"><?= htmlspecialchars($u['name']) ?></a>
                                 </h3>
                                 <div style="font-size: 0.8rem; color: #6B7280;">
-                                    📍 <?= htmlspecialchars($inst['city'] ?: $inst['district']) ?>, <strong><?= htmlspecialchars($inst['state']) ?></strong>
+                                    📍 <?= htmlspecialchars($u['district'] ?: 'District N/A') ?>, <strong><?= htmlspecialchars($u['state']) ?></strong>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Badges: Category & Accreditation -->
-                        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
-                            <?php if (!empty($inst['subtype'])): ?>
-                                <span style="font-size: 0.72rem; font-weight: 800; background: #111827; color: #FFFFFF; padding: 2px 7px; border-radius: 4px;">
-                                    <?= htmlspecialchars($inst['subtype']) ?>
+                        <!-- Badges: AISHE & Details -->
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;">
+                            <span style="font-size: 0.72rem; font-weight: 800; background: #111827; color: #FFFFFF; padding: 2px 7px; border-radius: 4px;">
+                                AISHE: <?= htmlspecialchars($u['aishe_code']) ?>
+                            </span>
+                            <?php if (!empty($u['year_of_establishment'])): ?>
+                                <span style="font-size: 0.72rem; font-weight: 700; background: var(--orange-light); color: var(--orange-dark); padding: 2px 7px; border-radius: 4px; border: 1px solid var(--orange-border);">
+                                    Est. <?= htmlspecialchars($u['year_of_establishment']) ?>
                                 </span>
                             <?php endif; ?>
-                            <?php if (!empty($inst['affiliation'])): ?>
-                                <span style="font-size: 0.72rem; font-weight: 700; background: #EFF6FF; color: #1E40AF; padding: 2px 7px; border-radius: 4px; border: 1px solid #BFDBFE;">
-                                    <?= htmlspecialchars($inst['affiliation']) ?>
+                            <?php if (!empty($u['location'])): ?>
+                                <span style="font-size: 0.72rem; font-weight: 600; background: #F1F5F9; color: #475569; padding: 2px 7px; border-radius: 4px;">
+                                    <?= htmlspecialchars($u['location']) ?> Area
                                 </span>
                             <?php endif; ?>
-                            <?php if ($inst['is_verified']): ?>
-                                <span style="font-size: 0.72rem; font-weight: 800; background: var(--orange-light); color: var(--orange-dark); padding: 2px 7px; border-radius: 4px; border: 1px solid var(--orange-border);">
-                                    ✓ Verified
-                                </span>
-                            <?php endif; ?>
+                            <span style="font-size: 0.72rem; font-weight: 800; background: #F0FDF4; color: #166534; padding: 2px 7px; border-radius: 4px; border: 1px solid #BBF7D0;">
+                                ✓ Verified
+                            </span>
                         </div>
-
-                        <!-- Description -->
-                        <p style="font-size: 0.82rem; color: #4B5563; line-height: 1.5; margin-bottom: 12px;">
-                            <?= htmlspecialchars(mb_substr($inst['overview'] ?? '', 0, 110)) ?>...
-                        </p>
-
-                        <!-- Facilities -->
-                        <?php if (!empty($facilities)): ?>
-                            <div style="font-size: 0.74rem; color: #6B7280; margin-bottom: 12px;">
-                                Campus: <strong style="color: #111827;"><?= htmlspecialchars(implode(', ', array_slice($facilities, 0, 3))) ?></strong>
-                            </div>
-                        <?php endif; ?>
                     </div>
 
-                    <!-- Bottom Bar: Fee & Action -->
+                    <!-- Bottom Bar: Portal & Action -->
                     <div style="border-top: 1px solid #F1F5F9; padding-top: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                         <div>
-                            <div style="font-size: 0.68rem; color: #6B7280; text-transform: uppercase; font-weight: 700;">Tuition Fee</div>
-                            <div style="font-size: 0.85rem; font-weight: 800; color: var(--orange-dark);">
-                                <?= htmlspecialchars($inst['fee_range'] ?: 'Details on request') ?>
-                            </div>
+                            <?php if (!empty($u['website']) && $u['website'] !== '-'): 
+                                $web = $u['website'];
+                                if (!preg_match("~^(?:f|ht)tps?://~i", $web)) $web = "http://" . $web;
+                            ?>
+                                <a href="<?= htmlspecialchars($web) ?>" target="_blank" rel="noopener noreferrer" style="font-size: 0.78rem; font-weight: 700; color: var(--orange);">
+                                    Visit Portal ↗
+                                </a>
+                            <?php else: ?>
+                                <span style="font-size: 0.74rem; color: #9CA3AF;">Official Portal</span>
+                            <?php endif; ?>
                         </div>
                         <div style="display: flex; gap: 6px;">
-                            <a href="institution-detail.php?slug=<?= urlencode($inst['slug']) ?>" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.78rem; border-color: #111827; color: #111827;">
+                            <a href="university-detail.php?slug=<?= urlencode($u['slug']) ?>" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.78rem; border-color: #111827; color: #111827;">
                                 Details →
                             </a>
                             <a href="#counseling-box" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.78rem;">

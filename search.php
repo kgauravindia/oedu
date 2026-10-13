@@ -87,21 +87,7 @@ if ($query !== '' || $state !== '' || $type !== 'all') {
         $institutesList = $stmtInst->fetchAll();
     }
 
-    // 6. Other Institutions
-    if (in_array($type, ['all', 'institutions'])) {
-        $stmt = $pdo->prepare("
-            SELECT * FROM institutions 
-            WHERE (name LIKE :q OR type LIKE :q OR city LIKE :q OR district LIKE :q)
-            " . ($state ? "AND state LIKE :st" : "") . "
-            LIMIT 10
-        ");
-        $params = [':q' => $searchWildcard];
-        if ($state) $params[':st'] = "%{$state}%";
-        $stmt->execute($params);
-        $institutions = $stmt->fetchAll();
-    }
-
-    // 7. Exams
+    // 6. Exams
     if (in_array($type, ['all', 'exams'])) {
         $stmt = $pdo->prepare("
             SELECT * FROM examinations 
@@ -112,7 +98,7 @@ if ($query !== '' || $state !== '' || $type !== 'all') {
         $examinations = $stmt->fetchAll();
     }
 
-    // 8. Scholarships
+    // 7. Scholarships
     if (in_array($type, ['all', 'scholarships'])) {
         $stmt = $pdo->prepare("
             SELECT * FROM scholarships 
@@ -124,7 +110,7 @@ if ($query !== '' || $state !== '' || $type !== 'all') {
     }
 }
 
-$totalResults = count($resources) + count($educators) + count($universitiesList) + count($collegesList) + count($institutesList) + count($institutions) + count($examinations) + count($scholarships);
+$totalResults = count($resources) + count($educators) + count($universitiesList) + count($collegesList) + count($institutesList) + count($examinations) + count($scholarships);
 
 $pageTitle = 'Search Results: ' . ($query ?: 'All Categories') . ' — Oedu.in';
 require_once __DIR__ . '/includes/header.php';
@@ -152,9 +138,6 @@ require_once __DIR__ . '/includes/header.php';
     </a>
     <a href="search.php?q=<?= urlencode($query) ?>&type=institutes" class="btn <?= $type == 'institutes' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem;">
         🏢 Standalone Institutes (<?= count($institutesList) ?>)
-    </a>
-    <a href="search.php?q=<?= urlencode($query) ?>&type=institutions" class="btn <?= $type == 'institutions' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem;">
-        🏫 Other Institutions (<?= count($institutions) ?>)
     </a>
     <a href="search.php?q=<?= urlencode($query) ?>&type=exams" class="btn <?= $type == 'exams' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem;">
         🎯 Exams (<?= count($examinations) ?>)
@@ -392,35 +375,6 @@ require_once __DIR__ . '/includes/header.php';
                         </div>
                         <a href="tutor-detail.php?slug=<?= urlencode($tutor['slug']) ?>" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.78rem;">
                             Contact Educator →
-                        </a>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
-<?php endif; ?>
-
-<!-- 3. Institutions -->
-<?php if (!empty($institutions)): ?>
-    <div style="margin-bottom: 36px;">
-        <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--charcoal); margin-bottom: 14px;">
-            🏫 Educational Institutions (<?= count($institutions) ?>)
-        </h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
-            <?php foreach ($institutions as $inst): ?>
-                <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; display: flex; gap: 12px;">
-                    <div style="width: 48px; height: 48px; border-radius: 10px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; flex-shrink: 0;">
-                        🏫
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 700; color: var(--charcoal); font-size: 0.95rem;">
-                            <a href="institution-detail.php?slug=<?= urlencode($inst['slug']) ?>"><?= htmlspecialchars($inst['name']) ?></a>
-                        </div>
-                        <div style="font-size: 0.8rem; color: var(--slate-muted); margin: 3px 0;">
-                            📍 <?= htmlspecialchars($inst['city'] ?: $inst['district']) ?>, <?= htmlspecialchars($inst['state']) ?> • <?= htmlspecialchars($inst['affiliation'] ?? 'Recognized') ?>
-                        </div>
-                        <a href="institution-detail.php?slug=<?= urlencode($inst['slug']) ?>" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.78rem;">
-                            View Campus & Courses →
                         </a>
                     </div>
                 </div>
