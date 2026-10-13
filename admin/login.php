@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label class="form-label small fw-bold text-dark">Username or Email</label>
             <div class="input-group">
                 <span class="input-group-text bg-light text-muted border-end-0"><i class="fas fa-user"></i></span>
-                <input type="text" name="username" class="form-control border-start-0" required placeholder="admin" autofocus>
+                <input type="text" name="username" class="form-control border-start-0" required placeholder="Enter username or email" autofocus>
             </div>
         </div>
 
@@ -152,12 +152,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             Sign In to Hub <i class="fas fa-arrow-right ms-1"></i>
         </button>
     </form>
-
-    <div class="mt-4 pt-3 border-top text-center">
-        <small class="text-muted" style="font-size: 0.76rem;">
-            Default Superadmin: <strong>admin</strong> / <strong>Admin@Oedu2026!</strong>
-        </small>
-    </div>
 </div>
 
 </body>
