@@ -1,60 +1,87 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Oedu.in — National Education Platform of India
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="logo_full.png" alt="Oedu.in Logo" width="320">
 </p>
 
-## About Laravel
+> **विद्या ददाति विनयम्** — One Education Platform for Every People
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Comprehensive national directory of **72,800+** higher education institutions across all **36 States & UTs** and **780 Districts** of India, powered by official AISHE and `op_sdb` data.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🏛️ Directory Coverage
 
-## Learning Laravel
+- **1,438+ Universities** — Central, State Public, Deemed, and Institutes of National Importance (IITs, IIMs, AIIMS).
+- **54,351+ Affiliated Colleges** — Government, Private Aided, and Private Un-aided colleges with affiliating university linkage.
+- **17,010+ Standalone Institutes** — Polytechnics, Nursing diploma colleges, Teacher Training institutes, Paramedical, and PGDM business schools.
+- **36 States & 780 Districts** — Cascading location filter powered by `op_sdb`.
+- **National Entrance Examinations** — CUET-UG/PG, JEE Main, NEET-UG, GATE, CAT cutoffs and dates.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🛠️ Tech Stack & Architecture
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+- **Backend:** PHP 8.3 with PDO MySQL (`utf8mb4`).
+- **Frontend:** Pure HTML5, Semantic CSS3 (custom design system), and Vanilla JavaScript.
+- **Database:** MySQL 8.x with indexed schemas for sub-second search and pagination.
+- **SMS Gateway:** DLT-approved OTP dispatch via OfferPlant.
 
-## Agentic Development
+---
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## 🚀 Setup & Local Installation
 
-```bash
-composer require laravel/boost --dev
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/kgauravindia/oedu.git
+   cd oedu
+   ```
 
-php artisan boost:install
+2. **Configure Database:**
+   Copy the example database config:
+   ```bash
+   cp includes/db.php.example includes/db.php
+   ```
+   Update `includes/db.php` with your local MySQL credentials (`DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`).
+
+3. **Serve Locally:**
+   Run via PHP built-in server or Laragon:
+   ```bash
+   php -S localhost:8000
+   ```
+   Or open `http://onlineeducation.test` in Laragon.
+
+---
+
+## 📁 Project Structure
+
+```
+├── api/
+│   └── districts.php         # Fast JSON endpoint for cascading district dropdowns
+├── assets/
+│   ├── css/style.css         # Oedu.in responsive design system
+│   └── js/main.js            # Vanilla JS scripts (state/district cascading, language)
+├── includes/
+│   ├── db.php.example        # Database config template (credentials gitignored)
+│   ├── header.php            # Global navigation ribbon & omnibox
+│   ├── footer.php            # Footer links & national accreditation badges
+│   └── sms.php               # DLT SMS OTP sender
+├── index.php                 # National portal homepage with stats & 3-step finder
+├── institutions.php          # 1,438+ Universities directory
+├── university-detail.php     # Detailed university profile & affiliated institutions
+├── colleges.php              # 54,351+ Affiliated colleges directory
+├── college-detail.php        # Detailed college profile & affiliating university info
+├── institutes.php            # 17,010+ Standalone institutes directory (Polytechnics, Nursing)
+├── institute-detail.php      # Detailed standalone institute profile
+├── exams.php                 # National entrance examinations & cutoffs
+├── search.php                # Unified Omnibox search engine across all sectors
+├── enquiry-submit.php        # Admission counseling lead submission
+├── favicon.ico               # Brand favicon
+└── robots.txt                # Search engine crawlers configuration
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## 🔒 Security & Privacy
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-
-# oedu
+Database passwords, SQL dumps, and raw spreadsheets are strictly excluded via `.gitignore`. Never commit `includes/db.php` or `.env` files.
