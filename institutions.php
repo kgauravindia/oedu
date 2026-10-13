@@ -61,7 +61,7 @@ $totalStatesOpSdb = (int) $pdo->query("SELECT COUNT(DISTINCT state) FROM op_sdb"
 $totalDistrictsOpSdb = (int) $pdo->query("SELECT COUNT(DISTINCT district) FROM op_sdb")->fetchColumn();
 
 $pageTitle = 'All Universities in India — National University Directory | Oedu.in';
-$pageDesc = 'Comprehensive national directory of 1,438+ Universities across all 36 States and 780 Districts of India. Powered by op_sdb and official AISHE data.';
+$pageDesc = 'Comprehensive national directory of 1,438+ Universities across all 36 States and 780 Districts of India. Powered by official AISHE data.';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -69,7 +69,7 @@ require_once __DIR__ . '/includes/header.php';
     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
         <div>
             <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 800; color: var(--orange-dark); background: var(--orange-light); border: 1px solid var(--orange-border); padding: 3px 10px; border-radius: 999px; margin-bottom: 6px;">
-                🇮🇳 Official AISHE & op_sdb National Directory
+                🇮🇳 Official AISHE National Directory
             </div>
             <h1 style="font-size: 1.85rem; font-weight: 800; color: #111827; margin-bottom: 4px; line-height: 1.25;">
                 National University Directory of India
@@ -90,7 +90,7 @@ require_once __DIR__ . '/includes/header.php';
 <div style="background: #FFFFFF; border: 1.5px solid #111827; border-radius: var(--radius-md); padding: 18px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
     <form action="institutions.php" method="GET" class="filter-form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) 110px; gap: 12px; align-items: flex-end;">
         <div>
-            <label style="font-size: 0.76rem; font-weight: 800; color: #111827; display: block; margin-bottom: 4px;">1. State (op_sdb)</label>
+            <label style="font-size: 0.76rem; font-weight: 800; color: #111827; display: block; margin-bottom: 4px;">1. State</label>
             <select name="state" class="state-select-input" data-district-target="inst-district-select" style="width: 100%; height: 42px; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.88rem; background: #FFF; font-weight: 600;">
                 <option value="">All 36 States & UTs</option>
                 <?php foreach ($allStates as $st): ?>
@@ -100,7 +100,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
 
         <div>
-            <label style="font-size: 0.76rem; font-weight: 800; color: #111827; display: block; margin-bottom: 4px;">2. District (op_sdb)</label>
+            <label style="font-size: 0.76rem; font-weight: 800; color: #111827; display: block; margin-bottom: 4px;">2. District</label>
             <select name="district" id="inst-district-select" style="width: 100%; height: 42px; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.88rem; background: #FFF; font-weight: 600;">
                 <option value="">All Districts</option>
                 <?php foreach ($stateDistricts as $dst): ?>

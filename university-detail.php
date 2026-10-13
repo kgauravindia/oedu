@@ -138,11 +138,11 @@ require_once __DIR__ . '/includes/header.php';
                 <td style="padding: 10px 0; color: #111827; font-weight: 800;"><?= htmlspecialchars($univ['aishe_code']) ?></td>
             </tr>
             <tr style="border-bottom: 1px solid #F1F5F9;">
-                <td style="padding: 10px 0; color: #6B7280; font-weight: 700;">State (op_sdb)</td>
+                <td style="padding: 10px 0; color: #6B7280; font-weight: 700;">State</td>
                 <td style="padding: 10px 0; color: #111827; font-weight: 800;"><?= htmlspecialchars($univ['state']) ?></td>
             </tr>
             <tr style="border-bottom: 1px solid #F1F5F9;">
-                <td style="padding: 10px 0; color: #6B7280; font-weight: 700;">District (op_sdb)</td>
+                <td style="padding: 10px 0; color: #6B7280; font-weight: 700;">District</td>
                 <td style="padding: 10px 0; color: #111827; font-weight: 800;"><?= htmlspecialchars($univ['district']) ?></td>
             </tr>
             <tr style="border-bottom: 1px solid #F1F5F9;">

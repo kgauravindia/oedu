@@ -2,7 +2,7 @@
 require_once __DIR__ . '/auth_check.php';
 requireAdmin();
 
-$pageTitle = 'School Education Directory (op_sdb) - Oedu Admin';
+$pageTitle = 'School Education Directory - Oedu Admin';
 
 // Search & Filter Inputs
 $search = trim($_GET['q'] ?? '');

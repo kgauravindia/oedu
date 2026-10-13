@@ -266,7 +266,7 @@ try {
                                 <span class="small fw-bold text-success"><i class="fas fa-check-circle me-1"></i> Connected</span>
                             </div>
                             <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
-                                <span class="small text-muted">School DB (op_sdb)</span>
+                                <span class="small text-muted">School Directory</span>
                                 <span class="small fw-bold"><?= number_format($sdbCount) ?> records</span>
                             </div>
                             <div class="pt-3">

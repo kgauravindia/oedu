@@ -85,12 +85,12 @@ require_once __DIR__ . '/includes/header.php';
         <div style="padding: 6px;">
             <div style="font-size: 1.5rem; font-weight: 800; color: var(--orange);"><?= $totalStatesCount ?></div>
             <div style="font-size: 0.75rem; font-weight: 700; color: #111827;">States & UTs</div>
-            <div style="font-size: 0.68rem; color: #6B7280;">(op_sdb data)</div>
+            <div style="font-size: 0.68rem; color: #6B7280;">(All India Covered)</div>
         </div>
         <div style="padding: 6px;">
             <div style="font-size: 1.5rem; font-weight: 800; color: var(--orange);"><?= $totalDistrictsCount ?></div>
             <div style="font-size: 0.75rem; font-weight: 700; color: #111827;">Districts</div>
-            <div style="font-size: 0.68rem; color: #6B7280;">(All India Covered)</div>
+            <div style="font-size: 0.68rem; color: #6B7280;">(Official Directory)</div>
         </div>
         <a href="institutions.php" style="padding: 6px; display: block; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 6px;">
             <div style="font-size: 1.5rem; font-weight: 800; color: #111827;"><?= number_format($totalUniversities) ?></div>
@@ -109,17 +109,17 @@ require_once __DIR__ . '/includes/header.php';
         </a>
     </div>
 
-    <!-- 3-STEP EASY FINDER FORM (Using op_sdb Table) -->
+    <!-- 3-STEP EASY FINDER FORM -->
     <div style="background: #FFFFFF; border: 2px solid #111827; border-radius: var(--radius-lg); padding: 20px; max-width: 960px; margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.06); text-align: left;">
         <div style="font-size: 0.85rem; font-weight: 800; color: #111827; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
             <span>🔍 3-Step Simple Finder (Select State & District from official directory):</span>
-            <span style="font-size: 0.75rem; font-weight: 700; color: var(--orange-dark); background: var(--orange-light); padding: 2px 8px; border-radius: 4px;">Powered by op_sdb</span>
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--orange-dark); background: var(--orange-light); padding: 2px 8px; border-radius: 4px;">Official National Directory</span>
         </div>
 
         <form action="index.php" method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) 120px; gap: 12px; align-items: flex-end;" class="filter-form-grid">
-            <!-- Step 1: State from op_sdb -->
+            <!-- Step 1: State -->
             <div>
-                <label style="font-size: 0.76rem; font-weight: 800; color: #111827; display: block; margin-bottom: 4px;">1. Select State (op_sdb)</label>
+                <label style="font-size: 0.76rem; font-weight: 800; color: #111827; display: block; margin-bottom: 4px;">1. Select State</label>
                 <select name="state" class="state-select-input" data-district-target="district-select" style="width: 100%; height: 44px; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.88rem; background: #FFF; font-weight: 600;">
                     <option value="">All 36 States & UTs</option>
                     <?php foreach ($allStates as $st): ?>
@@ -130,9 +130,9 @@ require_once __DIR__ . '/includes/header.php';
                 </select>
             </div>
 
-            <!-- Step 2: District from op_sdb -->
+            <!-- Step 2: District -->
             <div>
-                <label style="font-size: 0.76rem; font-weight: 800; color: #111827; display: block; margin-bottom: 4px;">2. Select District (op_sdb)</label>
+                <label style="font-size: 0.76rem; font-weight: 800; color: #111827; display: block; margin-bottom: 4px;">2. Select District</label>
                 <select name="district" id="district-select" style="width: 100%; height: 44px; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.88rem; background: #FFF; font-weight: 600;">
                     <option value="">All Districts</option>
                     <?php foreach ($stateDistricts as $dst): ?>
@@ -174,7 +174,7 @@ require_once __DIR__ . '/includes/header.php';
 <section style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin-bottom: 32px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
         <h2 style="font-size: 1.15rem; font-weight: 800; color: #111827; display: flex; align-items: center; gap: 6px;">
-            📍 Browse by State & Union Territory <span style="font-size: 0.75rem; font-weight: 700; color: var(--orange); background: var(--orange-light); padding: 2px 8px; border-radius: 999px;">op_sdb</span>
+            📍 Browse by State & Union Territory <span style="font-size: 0.75rem; font-weight: 700; color: var(--orange); background: var(--orange-light); padding: 2px 8px; border-radius: 999px;">All 36 States & UTs</span>
         </h2>
         <a href="index.php" style="font-size: 0.8rem; font-weight: 700; color: var(--orange);">Reset Selection ↺</a>
     </div>
@@ -323,7 +323,7 @@ require_once __DIR__ . '/includes/header.php';
             </div>
 
             <div>
-                <label style="font-size: 0.78rem; font-weight: 800; color: #111827; display: block; margin-bottom: 4px;">Select State (from op_sdb)</label>
+                <label style="font-size: 0.78rem; font-weight: 800; color: #111827; display: block; margin-bottom: 4px;">Select State</label>
                 <select name="state" style="width: 100%; height: 42px; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.88rem; background: #FFF; font-weight: 600;">
                     <option value="">Select State</option>
                     <?php foreach ($allStates as $st): ?>
