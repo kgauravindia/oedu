@@ -7,7 +7,7 @@ $aishe = trim($_GET['aishe'] ?? '');
 $id = (int)($_GET['id'] ?? 0);
 
 if (!$slug && !$aishe && !$id) {
-    header("Location: colleges.php");
+    header("Location: college.php");
     exit;
 }
 
@@ -30,7 +30,7 @@ if (!$college) {
     echo '<div style="background:#FFF; padding:48px 16px; text-align:center; border:1px solid #E5E7EB; border-radius:12px; margin:40px auto; max-width:600px;">';
     echo '<h2 style="color:#111827; font-weight:800;">College Not Found</h2>';
     echo '<p style="color:#6B7280; margin:8px 0 20px;">The requested college profile could not be located in the national directory.</p>';
-    echo '<a href="colleges.php" class="btn btn-primary">Browse All Colleges</a>';
+    echo '<a href="college.php" class="btn btn-primary">Browse All Colleges</a>';
     echo '</div>';
     require_once __DIR__ . '/includes/footer.php';
     exit;
@@ -62,9 +62,9 @@ require_once __DIR__ . '/includes/header.php';
 <div style="font-size: 0.8rem; color: #6B7280; margin-bottom: 16px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
     <a href="index.php" style="color: #111827; font-weight: 700;">Home</a>
     <span>/</span>
-    <a href="colleges.php" style="color: #111827; font-weight: 700;">Colleges</a>
+    <a href="college.php" style="color: #111827; font-weight: 700;">Colleges</a>
     <span>/</span>
-    <a href="colleges.php?state=<?= urlencode($college['state'] ?? '') ?>" style="color: var(--orange-dark); font-weight: 700;"><?= htmlspecialchars($college['state'] ?: 'India') ?></a>
+    <a href="college.php?state=<?= urlencode($college['state'] ?? '') ?>" style="color: var(--orange-dark); font-weight: 700;"><?= htmlspecialchars($college['state'] ?: 'India') ?></a>
     <span>/</span>
     <span style="color: #111827;"><?= htmlspecialchars($college['name']) ?></span>
 </div>
@@ -125,7 +125,7 @@ require_once __DIR__ . '/includes/header.php';
                 <a href="#enquiry-section" class="btn btn-primary">
                     Apply & Counseling Support →
                 </a>
-                <a href="colleges.php?state=<?= urlencode($college['state'] ?? '') ?>" class="btn btn-outline" style="border-color: #CBD5E1;">
+                <a href="college.php?state=<?= urlencode($college['state'] ?? '') ?>" class="btn btn-outline" style="border-color: #CBD5E1;">
                     More in <?= htmlspecialchars($college['state'] ?: 'State') ?>
                 </a>
             </div>
@@ -168,7 +168,7 @@ require_once __DIR__ . '/includes/header.php';
                     <?php endif; ?>
                 </div>
                 <?php if (!empty($college['university_aishe_code'])): ?>
-                    <a href="colleges.php?univ_aishe=<?= urlencode($college['university_aishe_code']) ?>" class="btn btn-outline" style="font-size: 0.8rem; padding: 6px 14px; border-color: var(--orange-dark); color: var(--orange-dark);">
+                    <a href="college.php?univ_aishe=<?= urlencode($college['university_aishe_code']) ?>" class="btn btn-outline" style="font-size: 0.8rem; padding: 6px 14px; border-color: var(--orange-dark); color: var(--orange-dark);">
                         Explore all affiliated colleges under this university →
                     </a>
                 <?php endif; ?>
@@ -251,9 +251,10 @@ require_once __DIR__ . '/includes/header.php';
                 Get direct guidance on cut-offs, eligibility, seat availability, fees, and application dates for <?= htmlspecialchars($college['name']) ?>.
             </p>
 
-            <form action="enquiry-submit.php" method="POST">
+            <form action="enquiry-submit.php" method="POST" class="oedu-enquiry-form">
                 <input type="hidden" name="target_type" value="college">
-                <input type="hidden" name="target_id" value="<?= $college['id'] ?>">
+                <input type="hidden" name="target_id" value="<?= (int)$college['id'] ?>">
+                <input type="hidden" name="redirect_url" value="college-detail.php?<?= !empty($college['slug']) ? 'slug=' . urlencode($college['slug']) : 'id=' . (int)$college['id'] ?>">
 
                 <div style="margin-bottom: 10px;">
                     <label style="font-size: 0.74rem; font-weight: 700; color: #111827; display: block; margin-bottom: 3px;">Full Name *</label>

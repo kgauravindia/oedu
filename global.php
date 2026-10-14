@@ -17,7 +17,7 @@ require_once __DIR__ . '/includes/header.php';
         Serving Indian students living across the United Arab Emirates, United States, United Kingdom, Canada, Australia, and Singapore. Bringing the rich Indian curriculum, language mastery, and cultural heritage to learners worldwide.
     </p>
     <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-        <a href="tutors.php?mode=online" class="btn btn-primary" style="padding: 10px 22px;">
+        <a href="tutor.php?mode=online" class="btn btn-primary" style="padding: 10px 22px;">
             Find Global Online Tutor →
         </a>
         <a href="learn.php" class="btn btn-outline" style="border-color: rgba(255,255,255,0.4); color: #FFF;">

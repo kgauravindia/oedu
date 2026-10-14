@@ -63,13 +63,13 @@ if (!isset($pageDesc)) {
 
                 <!-- Quick Action Links -->
                 <div class="header-actions">
-                    <a href="institutions.php" class="btn btn-outline" style="font-size: 0.8rem;">
+                    <a href="institution.php" class="btn btn-outline" style="font-size: 0.8rem;">
                         🏛️ Universities (1,438)
                     </a>
-                    <a href="colleges.php" class="btn btn-primary" style="font-size: 0.8rem;">
+                    <a href="college.php" class="btn btn-primary" style="font-size: 0.8rem;">
                         🎓 Colleges (54K+)
                     </a>
-                    <a href="institutes.php" class="btn btn-outline" style="font-size: 0.8rem;">
+                    <a href="institute.php" class="btn btn-outline" style="font-size: 0.8rem;">
                         🏢 Institutes (17K+)
                     </a>
                 </div>
@@ -101,16 +101,16 @@ if (!isset($pageDesc)) {
                 <a href="index.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'index.php' && !isset($_GET['sub']) ? 'active' : '' ?>">
                     🏠 Home
                 </a>
-                <a href="institutions.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'institutions.php' ? 'active' : '' ?>">
+                <a href="institution.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'institution.php' ? 'active' : '' ?>">
                     🏛️ Universities <span class="ribbon-badge">1,438 Directory</span>
                 </a>
-                <a href="colleges.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'colleges.php' ? 'active' : '' ?>">
+                <a href="college.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'college.php' ? 'active' : '' ?>">
                     🎓 Affiliated Colleges <span class="ribbon-badge">54,351 Directory</span>
                 </a>
-                <a href="institutes.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'institutes.php' ? 'active' : '' ?>">
+                <a href="institute.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'institute.php' ? 'active' : '' ?>">
                     🏢 Standalone Institutes <span class="ribbon-badge">17,010 Directory</span>
                 </a>
-                <a href="exams.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'exams.php' ? 'active' : '' ?>">
+                <a href="exam.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'exam.php' ? 'active' : '' ?>">
                     🎯 Entrance Cutoffs <span class="ribbon-badge">CUET • JEE • NEET</span>
                 </a>
                 <a href="government.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'government.php' ? 'active' : '' ?>">
@@ -125,5 +125,11 @@ if (!isset($pageDesc)) {
             <div class="flash-alert">
                 <span>✅ <?= htmlspecialchars($_GET['success']) ?></span>
                 <button type="button" onclick="this.parentElement.style.display='none'" style="background:none; border:none; cursor:pointer; font-size:1.2rem; color:var(--orange-dark);">×</button>
+            </div>
+        <?php endif; ?>
+        <?php if (!empty($_GET['error'])): ?>
+            <div class="flash-alert" style="background:#FEE2E2; border:1px solid #FCA5A5; color:#991B1B;">
+                <span>⚠️ <?= htmlspecialchars($_GET['error']) ?></span>
+                <button type="button" onclick="this.parentElement.style.display='none'" style="background:none; border:none; cursor:pointer; font-size:1.2rem; color:#991B1B;">×</button>
             </div>
         <?php endif; ?>

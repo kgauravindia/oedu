@@ -10,9 +10,9 @@ if (!$slug) {
 
 $stmt = $pdo->prepare("
     SELECT lr.*, b.code as board_code, b.name as board_name, s.name as subject_name
-    FROM learning_resources lr
-    LEFT JOIN boards b ON lr.board_id = b.id
-    LEFT JOIN subjects s ON lr.subject_id = s.id
+    FROM learning_resource lr
+    LEFT JOIN board b ON lr.board_id = b.id
+    LEFT JOIN subject s ON lr.subject_id = s.id
     WHERE lr.slug = :slug
     LIMIT 1
 ");
@@ -24,11 +24,11 @@ if (!$resource) {
 }
 
 // Increment view count
-$pdo->prepare("UPDATE learning_resources SET views_count = views_count + 1 WHERE id = :id")->execute([':id' => $resource['id']]);
+$pdo->prepare("UPDATE learning_resource SET views_count = views_count + 1 WHERE id = :id")->execute([':id' => $resource['id']]);
 
 // Related resources
 $relStmt = $pdo->prepare("
-    SELECT * FROM learning_resources 
+    SELECT * FROM learning_resource 
     WHERE subject_id = :sid AND id != :id 
     LIMIT 3
 ");
@@ -113,7 +113,7 @@ require_once __DIR__ . '/includes/header.php';
             <p style="font-size: 0.82rem; color: var(--slate-muted); margin-bottom: 16px;">
                 Connect with verified local home tutors or 1-on-1 online mentors specializing in <?= htmlspecialchars($resource['class_number']) ?>.
             </p>
-            <a href="tutors.php" class="btn btn-primary" style="width: 100%; font-size: 0.85rem;">
+            <a href="tutor.php" class="btn btn-primary" style="width: 100%; font-size: 0.85rem;">
                 Find <?= htmlspecialchars($resource['subject_name'] ?? '') ?> Tutors →
             </a>
         </div>

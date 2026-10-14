@@ -1,10 +1,10 @@
 <?php
-// scholarships.php — National & State Scholarships (.php only)
+// scholarship.php — National & State Scholarships (.php only)
 require_once __DIR__ . '/includes/db.php';
 
 $provider = trim($_GET['provider'] ?? '');
 
-$sql = "SELECT * FROM scholarships WHERE is_active = 1";
+$sql = "SELECT * FROM scholarship WHERE is_active = 1";
 $params = [];
 
 if ($provider) {
@@ -32,13 +32,13 @@ require_once __DIR__ . '/includes/header.php';
 
 <!-- Provider Filter Pills -->
 <div style="display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 4px;">
-    <a href="scholarships.php" class="btn <?= empty($provider) ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem;">
+    <a href="scholarship.php" class="btn <?= empty($provider) ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem;">
         All Scholarships
     </a>
-    <a href="scholarships.php?provider=Central+Government" class="btn <?= $provider == 'Central Government' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem;">
+    <a href="scholarship.php?provider=Central+Government" class="btn <?= $provider == 'Central Government' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem;">
         Central Government (MoE)
     </a>
-    <a href="scholarships.php?provider=State+Government" class="btn <?= $provider == 'State Government' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem;">
+    <a href="scholarship.php?provider=State+Government" class="btn <?= $provider == 'State Government' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem;">
         State Government Schemes
     </a>
 </div>

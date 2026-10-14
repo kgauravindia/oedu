@@ -1,10 +1,10 @@
 <?php
-// exams.php — National Entrance Exams Calendar (.php only)
+// exam.php — National Entrance Exams Calendar (.php only)
 require_once __DIR__ . '/includes/db.php';
 
 $category = trim($_GET['category'] ?? '');
 
-$sql = "SELECT * FROM examinations WHERE 1=1";
+$sql = "SELECT * FROM examination WHERE 1=1";
 $params = [];
 
 if ($category) {
@@ -17,7 +17,7 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $exams = $stmt->fetchAll();
 
-$categories = $pdo->query("SELECT DISTINCT category FROM examinations ORDER BY category ASC")->fetchAll(PDO::FETCH_COLUMN);
+$categories = $pdo->query("SELECT DISTINCT category FROM examination ORDER BY category ASC")->fetchAll(PDO::FETCH_COLUMN);
 
 $pageTitle = 'National Entrance Exams Calendar 2027 — JEE, NEET, CUET, UPSC | Oedu.in';
 require_once __DIR__ . '/includes/header.php';
@@ -34,11 +34,11 @@ require_once __DIR__ . '/includes/header.php';
 
 <!-- Category Filter Pills -->
 <div style="display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 4px;">
-    <a href="exams.php" class="btn <?= empty($category) ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem;">
+    <a href="exam.php" class="btn <?= empty($category) ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem;">
         All Exams
     </a>
     <?php foreach($categories as $cat): ?>
-        <a href="exams.php?category=<?= urlencode($cat) ?>" class="btn <?= $category == $cat ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem;">
+        <a href="exam.php?category=<?= urlencode($cat) ?>" class="btn <?= $category == $cat ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem;">
             <?= htmlspecialchars($cat) ?>
         </a>
     <?php endforeach; ?>

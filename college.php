@@ -1,5 +1,5 @@
 <?php
-// colleges.php — National Affiliated Colleges Directory of India (.php only)
+// college.php — National Affiliated Colleges Directory of India (.php only)
 // Powered by op_sdb table (36 States & 780 Districts) and college table (54,351 Colleges)
 require_once __DIR__ . '/includes/db.php';
 
@@ -96,10 +96,10 @@ require_once __DIR__ . '/includes/header.php';
             </p>
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <a href="institutions.php" class="btn btn-outline" style="font-size: 0.85rem; padding: 9px 16px;">
+            <a href="institution.php" class="btn btn-outline" style="font-size: 0.85rem; padding: 9px 16px;">
                 🏛️ Universities (1,438)
             </a>
-            <a href="institutes.php" class="btn btn-outline" style="font-size: 0.85rem; padding: 9px 16px;">
+            <a href="institute.php" class="btn btn-outline" style="font-size: 0.85rem; padding: 9px 16px;">
                 🏢 Standalone Institutes (17K+)
             </a>
             <a href="index.php#counseling-box" class="btn btn-primary" style="font-size: 0.85rem; padding: 9px 18px;">
@@ -111,26 +111,26 @@ require_once __DIR__ . '/includes/header.php';
 
 <!-- Quick Category Pills -->
 <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 16px; -webkit-overflow-scrolling: touch;">
-    <a href="colleges.php" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= empty($selectedMgmt) && empty($selectedUnivAishe) ? '#111827' : '#E5E7EB' ?>; background: <?= empty($selectedMgmt) && empty($selectedUnivAishe) ? '#111827' : '#FFFFFF' ?>; color: <?= empty($selectedMgmt) && empty($selectedUnivAishe) ? '#FFFFFF' : '#374151' ?>;">
+    <a href="college.php" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= empty($selectedMgmt) && empty($selectedUnivAishe) ? '#111827' : '#E5E7EB' ?>; background: <?= empty($selectedMgmt) && empty($selectedUnivAishe) ? '#111827' : '#FFFFFF' ?>; color: <?= empty($selectedMgmt) && empty($selectedUnivAishe) ? '#FFFFFF' : '#374151' ?>;">
         All Colleges (<?= number_format($totalCollegesOverall) ?>)
     </a>
-    <a href="colleges.php?management=State+Government" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedMgmt === 'State Government' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedMgmt === 'State Government' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedMgmt === 'State Government' ? 'var(--orange-dark)' : '#374151' ?>;">
+    <a href="college.php?management=State+Government" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedMgmt === 'State Government' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedMgmt === 'State Government' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedMgmt === 'State Government' ? 'var(--orange-dark)' : '#374151' ?>;">
         🏛️ State Government Colleges (6,900+)
     </a>
-    <a href="colleges.php?management=Private+Aided+(Government+Aided)" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedMgmt === 'Private Aided (Government Aided)' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedMgmt === 'Private Aided (Government Aided)' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedMgmt === 'Private Aided (Government Aided)' ? 'var(--orange-dark)' : '#374151' ?>;">
+    <a href="college.php?management=Private+Aided+(Government+Aided)" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedMgmt === 'Private Aided (Government Aided)' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedMgmt === 'Private Aided (Government Aided)' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedMgmt === 'Private Aided (Government Aided)' ? 'var(--orange-dark)' : '#374151' ?>;">
         ⭐ Government-Aided Colleges (5,900+)
     </a>
-    <a href="colleges.php?management=Private+Un-Aided" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedMgmt === 'Private Un-Aided' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedMgmt === 'Private Un-Aided' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedMgmt === 'Private Un-Aided' ? 'var(--orange-dark)' : '#374151' ?>;">
+    <a href="college.php?management=Private+Un-Aided" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedMgmt === 'Private Un-Aided' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedMgmt === 'Private Un-Aided' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedMgmt === 'Private Un-Aided' ? 'var(--orange-dark)' : '#374151' ?>;">
         🏫 Private Un-Aided (37,500+)
     </a>
-    <a href="colleges.php?management=Central+Government" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedMgmt === 'Central Government' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedMgmt === 'Central Government' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedMgmt === 'Central Government' ? 'var(--orange-dark)' : '#374151' ?>;">
+    <a href="college.php?management=Central+Government" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedMgmt === 'Central Government' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedMgmt === 'Central Government' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedMgmt === 'Central Government' ? 'var(--orange-dark)' : '#374151' ?>;">
         🇮🇳 Central Govt Colleges (400+)
     </a>
 </div>
 
 <!-- Filter Form -->
 <div style="background: #FFFFFF; border: 1.5px solid #111827; border-radius: var(--radius-md); padding: 18px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-    <form action="colleges.php" method="GET" class="filter-form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)) 110px; gap: 12px; align-items: flex-end;">
+    <form action="college.php" method="GET" class="filter-form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)) 110px; gap: 12px; align-items: flex-end;">
         <div>
             <label style="font-size: 0.76rem; font-weight: 800; color: #111827; display: block; margin-bottom: 4px;">1. State</label>
             <select name="state" class="state-select-input" data-district-target="col-district-select" style="width: 100%; height: 42px; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.88rem; background: #FFF; font-weight: 600;">
@@ -187,7 +187,7 @@ require_once __DIR__ . '/includes/header.php';
         (Page <?= $page ?> of <?= max(1, $totalPages) ?>)
     </div>
     <?php if ($selectedState || $selectedDistrict || $selectedMgmt || $selectedUnivAishe || $search): ?>
-        <a href="colleges.php" class="btn btn-outline" style="font-size: 0.78rem; padding: 5px 12px; border-color: #CBD5E1;">
+        <a href="college.php" class="btn btn-outline" style="font-size: 0.78rem; padding: 5px 12px; border-color: #CBD5E1;">
             Clear All Filters ✕
         </a>
     <?php endif; ?>
@@ -200,7 +200,7 @@ require_once __DIR__ . '/includes/header.php';
             <div style="font-size: 2.4rem; margin-bottom: 8px;">🎓</div>
             <h3 style="font-size: 1.15rem; font-weight: 800; color: #111827; margin-bottom: 4px;">No Colleges Found</h3>
             <p style="font-size: 0.88rem; color: #6B7280; margin-bottom: 16px;">Try adjusting your keyword or reset filters to explore all 54,351 colleges in India.</p>
-            <a href="colleges.php" class="btn btn-primary">Reset Filters</a>
+            <a href="college.php" class="btn btn-primary">Reset Filters</a>
         </div>
     <?php else: ?>
         <?php foreach ($colleges as $c): 
@@ -256,7 +256,7 @@ require_once __DIR__ . '/includes/header.php';
                                 <?= htmlspecialchars($c['university_name']) ?>
                             </div>
                             <?php if (!empty($c['university_aishe_code'])): ?>
-                                <a href="colleges.php?univ_aishe=<?= urlencode($c['university_aishe_code']) ?>" style="display: inline-block; margin-top: 4px; font-size: 0.7rem; color: var(--orange-dark); font-weight: 700;">
+                                <a href="college.php?univ_aishe=<?= urlencode($c['university_aishe_code']) ?>" style="display: inline-block; margin-top: 4px; font-size: 0.7rem; color: var(--orange-dark); font-weight: 700;">
                                     View all colleges under (<?= htmlspecialchars($c['university_aishe_code']) ?>) →
                                 </a>
                             <?php endif; ?>

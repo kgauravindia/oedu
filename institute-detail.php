@@ -7,7 +7,7 @@ $aishe = trim($_GET['aishe'] ?? '');
 $id = (int)($_GET['id'] ?? 0);
 
 if (!$slug && !$aishe && !$id) {
-    header("Location: institutes.php");
+    header("Location: institute.php");
     exit;
 }
 
@@ -30,7 +30,7 @@ if (!$inst) {
     echo '<div style="background:#FFF; padding:48px 16px; text-align:center; border:1px solid #E5E7EB; border-radius:12px; margin:40px auto; max-width:600px;">';
     echo '<h2 style="color:#111827; font-weight:800;">Institute Not Found</h2>';
     echo '<p style="color:#6B7280; margin:8px 0 20px;">The requested standalone institute could not be located in the national directory.</p>';
-    echo '<a href="institutes.php" class="btn btn-primary">Browse All Institutes</a>';
+    echo '<a href="institute.php" class="btn btn-primary">Browse All Institutes</a>';
     echo '</div>';
     require_once __DIR__ . '/includes/footer.php';
     exit;
@@ -74,9 +74,9 @@ require_once __DIR__ . '/includes/header.php';
 <div style="font-size: 0.8rem; color: #6B7280; margin-bottom: 16px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
     <a href="index.php" style="color: #111827; font-weight: 700;">Home</a>
     <span>/</span>
-    <a href="institutes.php" style="color: #111827; font-weight: 700;">Standalone Institutes</a>
+    <a href="institute.php" style="color: #111827; font-weight: 700;">Standalone Institutes</a>
     <span>/</span>
-    <a href="institutes.php?state=<?= urlencode($inst['state'] ?? '') ?>" style="color: var(--orange-dark); font-weight: 700;"><?= htmlspecialchars($inst['state'] ?: 'India') ?></a>
+    <a href="institute.php?state=<?= urlencode($inst['state'] ?? '') ?>" style="color: var(--orange-dark); font-weight: 700;"><?= htmlspecialchars($inst['state'] ?: 'India') ?></a>
     <span>/</span>
     <span style="color: #111827;"><?= htmlspecialchars($inst['name']) ?></span>
 </div>
@@ -127,10 +127,10 @@ require_once __DIR__ . '/includes/header.php';
                 <a href="#enquiry-section" class="btn btn-primary">
                     Apply & Counseling Guidance →
                 </a>
-                <a href="institutes.php?type=<?= urlencode($inst['institute_type'] ?? '') ?>" class="btn btn-outline" style="border-color: #111827; color: #111827; font-weight: 700;">
+                <a href="institute.php?type=<?= urlencode($inst['institute_type'] ?? '') ?>" class="btn btn-outline" style="border-color: #111827; color: #111827; font-weight: 700;">
                     More <?= htmlspecialchars($inst['institute_type'] ?? 'Institutes') ?>
                 </a>
-                <a href="institutes.php?state=<?= urlencode($inst['state'] ?? '') ?>" class="btn btn-outline" style="border-color: #CBD5E1;">
+                <a href="institute.php?state=<?= urlencode($inst['state'] ?? '') ?>" class="btn btn-outline" style="border-color: #CBD5E1;">
                     More in <?= htmlspecialchars($inst['state'] ?: 'State') ?>
                 </a>
             </div>
@@ -217,9 +217,10 @@ require_once __DIR__ . '/includes/header.php';
                 Get counseling on course admission, entrance requirements, diploma certificates, and dates for <?= htmlspecialchars($inst['name']) ?>.
             </p>
 
-            <form action="enquiry-submit.php" method="POST">
+            <form action="enquiry-submit.php" method="POST" class="oedu-enquiry-form">
                 <input type="hidden" name="target_type" value="institute">
-                <input type="hidden" name="target_id" value="<?= $inst['id'] ?>">
+                <input type="hidden" name="target_id" value="<?= (int)$inst['id'] ?>">
+                <input type="hidden" name="redirect_url" value="institute-detail.php?<?= !empty($inst['slug']) ? 'slug=' . urlencode($inst['slug']) : 'id=' . (int)$inst['id'] ?>">
 
                 <div style="margin-bottom: 10px;">
                     <label style="font-size: 0.74rem; font-weight: 700; color: #111827; display: block; margin-bottom: 3px;">Full Name *</label>

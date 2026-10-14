@@ -11,7 +11,7 @@ $menuBadgeCounts = [
 
 if (isset($pdo)) {
     try {
-        $enqCount = $pdo->query("SELECT COUNT(*) FROM enquiries WHERE status = 'new'")->fetchColumn();
+        $enqCount = $pdo->query("SELECT COUNT(*) FROM enquiry WHERE status = 'new'")->fetchColumn();
         $menuBadgeCounts['enquiries'] = (int)$enqCount;
     } catch (Exception $e) {
         // Fallback silently

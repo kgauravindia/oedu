@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'delete') {
         $id = (int)($_POST['id'] ?? 0);
         if ($id > 0) {
-            $stmt = $pdo->prepare("DELETE FROM enquiries WHERE id = :id");
+            $stmt = $pdo->prepare("DELETE FROM enquiry WHERE id = :id");
             $stmt->execute([':id' => $id]);
             $msg = "Inquiry #{$id} was successfully removed.";
         }
@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = (int)($_POST['id'] ?? 0);
         $newStatus = trim($_POST['status'] ?? 'new');
         if ($id > 0 && in_array($newStatus, ['new', 'contacted', 'closed'])) {
-            $stmt = $pdo->prepare("UPDATE enquiries SET status = :status, updated_at = NOW() WHERE id = :id");
+            $stmt = $pdo->prepare("UPDATE enquiry SET status = :status, updated_at = NOW() WHERE id = :id");
             $stmt->execute([':status' => $newStatus, ':id' => $id]);
             $msg = "Inquiry #{$id} marked as " . strtoupper($newStatus) . ".";
         }
@@ -50,20 +50,20 @@ if ($statusFilter !== '' && $statusFilter !== 'all') {
 $whereClause = implode(" AND ", $where);
 
 // Total Count
-$countStmt = $pdo->prepare("SELECT COUNT(*) FROM enquiries WHERE {$whereClause}");
+$countStmt = $pdo->prepare("SELECT COUNT(*) FROM enquiry WHERE {$whereClause}");
 $countStmt->execute($params);
 $totalRows = (int)$countStmt->fetchColumn();
 $totalPages = max(1, ceil($totalRows / $perPage));
 
 // Summary status counts
-$countNew = (int)$pdo->query("SELECT COUNT(*) FROM enquiries WHERE status = 'new'")->fetchColumn();
-$countContacted = (int)$pdo->query("SELECT COUNT(*) FROM enquiries WHERE status = 'contacted'")->fetchColumn();
-$countClosed = (int)$pdo->query("SELECT COUNT(*) FROM enquiries WHERE status = 'closed'")->fetchColumn();
+$countNew = (int)$pdo->query("SELECT COUNT(*) FROM enquiry WHERE status = 'new'")->fetchColumn();
+$countContacted = (int)$pdo->query("SELECT COUNT(*) FROM enquiry WHERE status = 'contacted'")->fetchColumn();
+$countClosed = (int)$pdo->query("SELECT COUNT(*) FROM enquiry WHERE status = 'closed'")->fetchColumn();
 $countAll = $countNew + $countContacted + $countClosed;
 
 // Fetch inquiries
 $dataStmt = $pdo->prepare("
-    SELECT * FROM enquiries 
+    SELECT * FROM enquiry 
     WHERE {$whereClause} 
     ORDER BY id DESC 
     LIMIT {$perPage} OFFSET {$offset}

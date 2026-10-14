@@ -1,12 +1,12 @@
 <?php
-// tutors.php — Verified Teachers & Home Tutors Network (.php only)
+// tutor.php — Verified Teachers & Home Tutors Network (.php only)
 require_once __DIR__ . '/includes/db.php';
 
 $selectedMode = trim($_GET['mode'] ?? '');
 $selectedState = trim($_GET['state'] ?? '');
 $search = trim($_GET['q'] ?? '');
 
-$sql = "SELECT * FROM educators WHERE 1=1";
+$sql = "SELECT * FROM educator WHERE 1=1";
 $params = [];
 
 if ($selectedState) {
@@ -23,7 +23,7 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $educators = $stmt->fetchAll();
 
-$states = $pdo->query("SELECT DISTINCT state FROM educators ORDER BY state ASC")->fetchAll(PDO::FETCH_COLUMN);
+$states = $pdo->query("SELECT DISTINCT state FROM educator ORDER BY state ASC")->fetchAll(PDO::FETCH_COLUMN);
 
 $pageTitle = 'Verified Teachers & Home Tutors Network — Oedu.in';
 require_once __DIR__ . '/includes/header.php';
@@ -47,7 +47,7 @@ require_once __DIR__ . '/includes/header.php';
 
 <!-- Search & Filter Bar -->
 <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px; margin-bottom: 28px; box-shadow: var(--shadow-sm);">
-    <form action="tutors.php" method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) 100px; gap: 12px; align-items: flex-end;">
+    <form action="tutor.php" method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) 100px; gap: 12px; align-items: flex-end;">
         <div>
             <label style="font-size: 0.78rem; font-weight: 700; color: var(--slate-body); display: block; margin-bottom: 4px;">Search Teacher / Subject / City</label>
             <input type="text" name="q" value="<?= htmlspecialchars($search) ?>" placeholder="e.g. Mathematics, Chapra, Priya Sharma, NEET Biology..." style="width: 100%; padding: 8px 12px; border: 1px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.88rem;">
@@ -84,7 +84,7 @@ require_once __DIR__ . '/includes/header.php';
     <?php if (empty($educators)): ?>
         <div style="grid-column: 1 / -1; background: var(--bg-card); padding: 48px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--border-color);">
             <p style="font-size: 1.1rem; color: var(--slate-muted); margin-bottom: 12px;">No tutors found matching your criteria.</p>
-            <a href="tutors.php" class="btn btn-outline">Reset Filter</a>
+            <a href="tutor.php" class="btn btn-outline">Reset Filter</a>
         </div>
     <?php else: ?>
         <?php foreach($educators as $tutor): 

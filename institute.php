@@ -1,5 +1,5 @@
 <?php
-// institutes.php — National Standalone Institutions Directory of India (.php only)
+// institute.php — National Standalone Institutions Directory of India (.php only)
 // Powered by op_sdb table (36 States & 780 Districts) and institute table (17,010 Standalone Institutes)
 require_once __DIR__ . '/includes/db.php';
 
@@ -112,10 +112,10 @@ require_once __DIR__ . '/includes/header.php';
             </p>
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <a href="institutions.php" class="btn btn-outline" style="font-size: 0.85rem; padding: 9px 16px;">
+            <a href="institution.php" class="btn btn-outline" style="font-size: 0.85rem; padding: 9px 16px;">
                 🏛️ Universities (1,438)
             </a>
-            <a href="colleges.php" class="btn btn-outline" style="font-size: 0.85rem; padding: 9px 16px;">
+            <a href="college.php" class="btn btn-outline" style="font-size: 0.85rem; padding: 9px 16px;">
                 🎓 Colleges (54K+)
             </a>
             <a href="index.php#counseling-box" class="btn btn-primary" style="font-size: 0.85rem; padding: 9px 18px;">
@@ -127,32 +127,32 @@ require_once __DIR__ . '/includes/header.php';
 
 <!-- Quick Category Pills -->
 <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 16px; -webkit-overflow-scrolling: touch;">
-    <a href="institutes.php" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= empty($selectedType) ? '#111827' : '#E5E7EB' ?>; background: <?= empty($selectedType) ? '#111827' : '#FFFFFF' ?>; color: <?= empty($selectedType) ? '#FFFFFF' : '#374151' ?>;">
+    <a href="institute.php" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= empty($selectedType) ? '#111827' : '#E5E7EB' ?>; background: <?= empty($selectedType) ? '#111827' : '#FFFFFF' ?>; color: <?= empty($selectedType) ? '#FFFFFF' : '#374151' ?>;">
         All Categories (<?= number_format($totalInstitutesOverall) ?>)
     </a>
-    <a href="institutes.php?type=Technical%2FPolytechnic" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedType === 'Technical/Polytechnic' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedType === 'Technical/Polytechnic' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedType === 'Technical/Polytechnic' ? 'var(--orange-dark)' : '#374151' ?>;">
+    <a href="institute.php?type=Technical%2FPolytechnic" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedType === 'Technical/Polytechnic' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedType === 'Technical/Polytechnic' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedType === 'Technical/Polytechnic' ? 'var(--orange-dark)' : '#374151' ?>;">
         🛠️ Polytechnics (5,361)
     </a>
-    <a href="institutes.php?type=Nursing+(Diploma)+Institute" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedType === 'Nursing (Diploma) Institute' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedType === 'Nursing (Diploma) Institute' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedType === 'Nursing (Diploma) Institute' ? 'var(--orange-dark)' : '#374151' ?>;">
+    <a href="institute.php?type=Nursing+(Diploma)+Institute" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedType === 'Nursing (Diploma) Institute' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedType === 'Nursing (Diploma) Institute' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedType === 'Nursing (Diploma) Institute' ? 'var(--orange-dark)' : '#374151' ?>;">
         🩺 Nursing Institutes (4,877)
     </a>
-    <a href="institutes.php?type=Teacher+Training+Institute" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedType === 'Teacher Training Institute' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedType === 'Teacher Training Institute' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedType === 'Teacher Training Institute' ? 'var(--orange-dark)' : '#374151' ?>;">
+    <a href="institute.php?type=Teacher+Training+Institute" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedType === 'Teacher Training Institute' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedType === 'Teacher Training Institute' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedType === 'Teacher Training Institute' ? 'var(--orange-dark)' : '#374151' ?>;">
         📖 Teacher Training (3,927)
     </a>
-    <a href="institutes.php?type=Paramedical+Institute" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedType === 'Paramedical Institute' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedType === 'Paramedical Institute' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedType === 'Paramedical Institute' ? 'var(--orange-dark)' : '#374151' ?>;">
+    <a href="institute.php?type=Paramedical+Institute" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedType === 'Paramedical Institute' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedType === 'Paramedical Institute' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedType === 'Paramedical Institute' ? 'var(--orange-dark)' : '#374151' ?>;">
         🧪 Paramedical (1,750)
     </a>
-    <a href="institutes.php?type=PGDM+Institute" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedType === 'PGDM Institute' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedType === 'PGDM Institute' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedType === 'PGDM Institute' ? 'var(--orange-dark)' : '#374151' ?>;">
+    <a href="institute.php?type=PGDM+Institute" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedType === 'PGDM Institute' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedType === 'PGDM Institute' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedType === 'PGDM Institute' ? 'var(--orange-dark)' : '#374151' ?>;">
         💼 PGDM Business (354)
     </a>
-    <a href="institutes.php?type=Pharmacy+Institution" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedType === 'Pharmacy Institution' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedType === 'Pharmacy Institution' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedType === 'Pharmacy Institution' ? 'var(--orange-dark)' : '#374151' ?>;">
+    <a href="institute.php?type=Pharmacy+Institution" style="white-space: nowrap; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid <?= $selectedType === 'Pharmacy Institution' ? 'var(--orange)' : '#E5E7EB' ?>; background: <?= $selectedType === 'Pharmacy Institution' ? 'var(--orange-light)' : '#FFFFFF' ?>; color: <?= $selectedType === 'Pharmacy Institution' ? 'var(--orange-dark)' : '#374151' ?>;">
         💊 Pharmacy (306)
     </a>
 </div>
 
 <!-- Filter Form -->
 <div style="background: #FFFFFF; border: 1.5px solid #111827; border-radius: var(--radius-md); padding: 18px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-    <form action="institutes.php" method="GET" class="filter-form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)) 110px; gap: 12px; align-items: flex-end;">
+    <form action="institute.php" method="GET" class="filter-form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)) 110px; gap: 12px; align-items: flex-end;">
         <div>
             <label style="font-size: 0.76rem; font-weight: 800; color: #111827; display: block; margin-bottom: 4px;">1. State</label>
             <select name="state" class="state-select-input" data-district-target="inst-district-select-box" style="width: 100%; height: 42px; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.88rem; background: #FFF; font-weight: 600;">
@@ -204,7 +204,7 @@ require_once __DIR__ . '/includes/header.php';
         (Page <?= $page ?> of <?= max(1, $totalPages) ?>)
     </div>
     <?php if ($selectedState || $selectedDistrict || $selectedType || $selectedMgmt || $search): ?>
-        <a href="institutes.php" class="btn btn-outline" style="font-size: 0.78rem; padding: 5px 12px; border-color: #CBD5E1;">
+        <a href="institute.php" class="btn btn-outline" style="font-size: 0.78rem; padding: 5px 12px; border-color: #CBD5E1;">
             Clear All Filters ✕
         </a>
     <?php endif; ?>
@@ -217,7 +217,7 @@ require_once __DIR__ . '/includes/header.php';
             <div style="font-size: 2.4rem; margin-bottom: 8px;">🏢</div>
             <h3 style="font-size: 1.15rem; font-weight: 800; color: #111827; margin-bottom: 4px;">No Institutes Found</h3>
             <p style="font-size: 0.88rem; color: #6B7280; margin-bottom: 16px;">Try adjusting your keyword or reset filters to view all 17,010 standalone institutes in India.</p>
-            <a href="institutes.php" class="btn btn-primary">Reset Filters</a>
+            <a href="institute.php" class="btn btn-primary">Reset Filters</a>
         </div>
     <?php else: ?>
         <?php foreach ($institutes as $inst): 

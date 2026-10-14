@@ -31,11 +31,11 @@
                 <div class="footer-col">
                     <h3>Universities</h3>
                     <ul>
-                        <li><a href="institutions.php?subtype=central_university">Central Universities (DU, BHU, JNU)</a></li>
-                        <li><a href="institutions.php?subtype=institute_of_national_importance">Institutes of National Importance</a></li>
-                        <li><a href="institutions.php?subtype=state_university">State Universities (Pune, Jadavpur)</a></li>
-                        <li><a href="institutions.php?type=university">Deemed Universities (IISc)</a></li>
-                        <li><a href="institutions.php?type=university">Private Universities</a></li>
+                        <li><a href="institution.php?subtype=central_university">Central Universities (DU, BHU, JNU)</a></li>
+                        <li><a href="institution.php?subtype=institute_of_national_importance">Institutes of National Importance</a></li>
+                        <li><a href="institution.php?subtype=state_university">State Universities (Pune, Jadavpur)</a></li>
+                        <li><a href="institution.php?type=university">Deemed Universities (IISc)</a></li>
+                        <li><a href="institution.php?type=university">Private Universities</a></li>
                     </ul>
                 </div>
 
@@ -43,11 +43,11 @@
                 <div class="footer-col">
                     <h3>Top Colleges</h3>
                     <ul>
-                        <li><a href="institutions.php?type=college">NIRF #1 Colleges (Miranda House)</a></li>
-                        <li><a href="institutions.php?type=college">Autonomous Colleges (Loyola)</a></li>
-                        <li><a href="institutions.php?q=Medical">Medical Colleges (AIIMS)</a></li>
-                        <li><a href="institutions.php?q=Engineering">Engineering Colleges (IITs)</a></li>
-                        <li><a href="institutions.php?q=Law">Law Universities (NLSIU)</a></li>
+                        <li><a href="institution.php?type=college">NIRF #1 Colleges (Miranda House)</a></li>
+                        <li><a href="institution.php?type=college">Autonomous Colleges (Loyola)</a></li>
+                        <li><a href="institution.php?q=Medical">Medical Colleges (AIIMS)</a></li>
+                        <li><a href="institution.php?q=Engineering">Engineering Colleges (IITs)</a></li>
+                        <li><a href="institution.php?q=Law">Law Universities (NLSIU)</a></li>
                     </ul>
                 </div>
 
@@ -55,10 +55,10 @@
                 <div class="footer-col">
                     <h3>Admissions & Cutoffs</h3>
                     <ul>
-                        <li><a href="exams.php?category=University+Admission">CUET-UG University Calendar</a></li>
-                        <li><a href="exams.php?category=Engineering+Entrance">JEE Main & Advanced</a></li>
-                        <li><a href="exams.php?category=Medical+Entrance">NEET-UG Medical Admission</a></li>
-                        <li><a href="scholarships.php">National Scholarships (NSP)</a></li>
+                        <li><a href="exam.php?category=University+Admission">CUET-UG University Calendar</a></li>
+                        <li><a href="exam.php?category=Engineering+Entrance">JEE Main & Advanced</a></li>
+                        <li><a href="exam.php?category=Medical+Entrance">NEET-UG Medical Admission</a></li>
+                        <li><a href="scholarship.php">National Scholarships (NSP)</a></li>
                         <li><a href="government.php">UGC & AICTE Guidelines</a></li>
                     </ul>
                 </div>
@@ -67,7 +67,7 @@
                 <div class="footer-col">
                     <h3>Oedu Network</h3>
                     <ul>
-                        <li><a href="institutions.php">List Your University or College</a></li>
+                        <li><a href="institution.php">List Your University or College</a></li>
                         <li><a href="global.php">NRI & Diaspora Admissions</a></li>
                         <li><a href="government.php">NEP 2020 Initiatives</a></li>
                         <li><a href="#child-safety">Student Privacy Guarantee</a></li>
@@ -96,11 +96,11 @@
             <span class="mobile-nav-icon">🏠</span>
             <span class="mobile-nav-label">Home</span>
         </a>
-        <a href="institutions.php?type=university" class="mobile-nav-item <?= ($_GET['type'] ?? '') == 'university' ? 'active' : '' ?>">
+        <a href="institution.php?type=university" class="mobile-nav-item <?= ($_GET['type'] ?? '') == 'university' ? 'active' : '' ?>">
             <span class="mobile-nav-icon">🏛️</span>
             <span class="mobile-nav-label">Universities</span>
         </a>
-        <a href="institutions.php?type=college" class="mobile-nav-item <?= ($_GET['type'] ?? '') == 'college' ? 'active' : '' ?>">
+        <a href="institution.php?type=college" class="mobile-nav-item <?= ($_GET['type'] ?? '') == 'college' ? 'active' : '' ?>">
             <span class="mobile-nav-icon">🎓</span>
             <span class="mobile-nav-label">Colleges</span>
         </a>

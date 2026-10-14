@@ -67,13 +67,13 @@ Comprehensive national directory of **72,800+** higher education institutions ac
 │   ├── footer.php            # Footer links & national accreditation badges
 │   └── sms.php               # DLT SMS OTP sender
 ├── index.php                 # National portal homepage with stats & 3-step finder
-├── institutions.php          # 1,438+ Universities directory
+├── institution.php          # 1,438+ Universities directory
 ├── university-detail.php     # Detailed university profile & affiliated institutions
-├── colleges.php              # 54,351+ Affiliated colleges directory
+├── college.php              # 54,351+ Affiliated colleges directory
 ├── college-detail.php        # Detailed college profile & affiliating university info
-├── institutes.php            # 17,010+ Standalone institutes directory (Polytechnics, Nursing)
+├── institute.php            # 17,010+ Standalone institutes directory (Polytechnics, Nursing)
 ├── institute-detail.php      # Detailed standalone institute profile
-├── exams.php                 # National entrance examinations & cutoffs
+├── exam.php                 # National entrance examinations & cutoffs
 ├── search.php                # Unified Omnibox search engine across all sectors
 ├── enquiry-submit.php        # Admission counseling lead submission
 ├── favicon.ico               # Brand favicon

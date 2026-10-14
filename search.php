@@ -21,9 +21,9 @@ if ($query !== '' || $state !== '' || $type !== 'all') {
     if (in_array($type, ['all', 'learn'])) {
         $stmt = $pdo->prepare("
             SELECT lr.*, b.code as board_code, s.name as subject_name 
-            FROM learning_resources lr 
-            LEFT JOIN boards b ON lr.board_id = b.id 
-            LEFT JOIN subjects s ON lr.subject_id = s.id 
+            FROM learning_resource lr 
+            LEFT JOIN board b ON lr.board_id = b.id 
+            LEFT JOIN subject s ON lr.subject_id = s.id 
             WHERE lr.title LIKE :q OR lr.title_hi LIKE :q OR lr.class_number LIKE :q OR lr.content_body LIKE :q
             LIMIT 10
         ");
@@ -34,7 +34,7 @@ if ($query !== '' || $state !== '' || $type !== 'all') {
     // 2. Educators
     if (in_array($type, ['all', 'tutors'])) {
         $stmt = $pdo->prepare("
-            SELECT * FROM educators 
+            SELECT * FROM educator 
             WHERE (name LIKE :q OR headline LIKE :q OR city LIKE :q OR district LIKE :q OR bio LIKE :q)
             " . ($state ? "AND state LIKE :st" : "") . "
             LIMIT 10
@@ -90,7 +90,7 @@ if ($query !== '' || $state !== '' || $type !== 'all') {
     // 6. Exams
     if (in_array($type, ['all', 'exams'])) {
         $stmt = $pdo->prepare("
-            SELECT * FROM examinations 
+            SELECT * FROM examination 
             WHERE title LIKE :q OR code LIKE :q OR category LIKE :q
             LIMIT 10
         ");
@@ -101,7 +101,7 @@ if ($query !== '' || $state !== '' || $type !== 'all') {
     // 7. Scholarships
     if (in_array($type, ['all', 'scholarships'])) {
         $stmt = $pdo->prepare("
-            SELECT * FROM scholarships 
+            SELECT * FROM scholarship 
             WHERE title LIKE :q OR provider_type LIKE :q OR ministry_or_body LIKE :q
             LIMIT 10
         ");
@@ -165,7 +165,7 @@ require_once __DIR__ . '/includes/header.php';
             <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--charcoal); margin: 0;">
                 🏛️ Universities (<?= count($universitiesList) ?>)
             </h3>
-            <a href="institutions.php?type=University" style="font-size: 0.85rem; font-weight: 700; color: var(--orange);">View National Directory →</a>
+            <a href="institution.php?type=University" style="font-size: 0.85rem; font-weight: 700; color: var(--orange);">View National Directory →</a>
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
             <?php foreach ($universitiesList as $univ): ?>
@@ -220,7 +220,7 @@ require_once __DIR__ . '/includes/header.php';
             <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--charcoal); margin: 0;">
                 🎓 Affiliated Colleges (<?= count($collegesList) ?>)
             </h3>
-            <a href="colleges.php" style="font-size: 0.85rem; font-weight: 700; color: var(--orange);">View All 54,351 Colleges →</a>
+            <a href="college.php" style="font-size: 0.85rem; font-weight: 700; color: var(--orange);">View All 54,351 Colleges →</a>
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
             <?php foreach ($collegesList as $colItem): ?>
@@ -276,7 +276,7 @@ require_once __DIR__ . '/includes/header.php';
             <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--charcoal); margin: 0;">
                 🏢 Standalone Institutes (<?= count($institutesList) ?>)
             </h3>
-            <a href="institutes.php" style="font-size: 0.85rem; font-weight: 700; color: var(--orange);">View All 17,010 Institutes →</a>
+            <a href="institute.php" style="font-size: 0.85rem; font-weight: 700; color: var(--orange);">View All 17,010 Institutes →</a>
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
             <?php foreach ($institutesList as $insItem): ?>
@@ -308,7 +308,7 @@ require_once __DIR__ . '/includes/header.php';
                         <a href="institute-detail.php?slug=<?= urlencode($insItem['slug']) ?>" class="btn btn-primary" style="flex: 1; text-align: center; font-size: 0.82rem; padding: 7px 12px;">
                             Institute Profile →
                         </a>
-                        <a href="institutes.php?type=<?= urlencode($insItem['institute_type'] ?? '') ?>" class="btn btn-outline" style="font-size: 0.82rem; padding: 7px 12px;">
+                        <a href="institute.php?type=<?= urlencode($insItem['institute_type'] ?? '') ?>" class="btn btn-outline" style="font-size: 0.82rem; padding: 7px 12px;">
                             Similar
                         </a>
                     </div>

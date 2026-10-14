@@ -7,7 +7,7 @@ $aishe = trim($_GET['aishe'] ?? '');
 $id = (int)($_GET['id'] ?? 0);
 
 if (!$slug && !$aishe && !$id) {
-    header("Location: institutions.php");
+    header("Location: institution.php");
     exit;
 }
 
@@ -48,7 +48,7 @@ if (!$univ) {
     echo '<div style="background:#FFF; padding:48px 16px; text-align:center; border:1px solid #E5E7EB; border-radius:12px; margin:40px auto; max-width:600px;">';
     echo '<h2 style="color:#111827; font-weight:800;">University Not Found</h2>';
     echo '<p style="color:#6B7280; margin:8px 0 20px;">The requested university profile could not be located in the national directory.</p>';
-    echo '<a href="institutions.php" class="btn btn-primary">Browse All Universities</a>';
+    echo '<a href="institution.php" class="btn btn-primary">Browse All Universities</a>';
     echo '</div>';
     require_once __DIR__ . '/includes/footer.php';
     exit;
@@ -63,7 +63,7 @@ require_once __DIR__ . '/includes/header.php';
 <div style="font-size: 0.8rem; color: #6B7280; margin-bottom: 16px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
     <a href="index.php" style="color: #111827; font-weight: 700;">Home</a>
     <span>/</span>
-    <a href="institutions.php?state=<?= urlencode($univ['state']) ?>" style="color: var(--orange-dark); font-weight: 700;"><?= htmlspecialchars($univ['state']) ?></a>
+    <a href="institution.php?state=<?= urlencode($univ['state']) ?>" style="color: var(--orange-dark); font-weight: 700;"><?= htmlspecialchars($univ['state']) ?></a>
     <span>/</span>
     <span style="color: #111827;"><?= htmlspecialchars($univ['name']) ?></span>
 </div>
@@ -173,18 +173,21 @@ require_once __DIR__ . '/includes/header.php';
         </p>
 
         <form action="enquiry-submit.php" method="POST" class="oedu-enquiry-form" style="display: flex; flex-direction: column; gap: 12px;">
-            <input type="hidden" name="institution_id" value="<?= $univ['id'] ?>">
+            <input type="hidden" name="target_type" value="university">
+            <input type="hidden" name="target_id" value="<?= (int)$univ['id'] ?>">
+            <input type="hidden" name="institution_id" value="<?= (int)$univ['id'] ?>">
             <input type="hidden" name="institution_name" value="<?= htmlspecialchars($univ['name']) ?>">
             <input type="hidden" name="source" value="university_detail_page">
+            <input type="hidden" name="redirect_url" value="university-detail.php?<?= !empty($univ['slug']) ? 'slug=' . urlencode($univ['slug']) : 'id=' . (int)$univ['id'] ?>">
 
             <div>
                 <label style="font-size: 0.76rem; font-weight: 800; color: #111827; display: block; margin-bottom: 4px;">Student Name *</label>
-                <input type="text" name="student_name" placeholder="Your Full Name" required style="width: 100%; height: 40px; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.88rem;">
+                <input type="text" name="sender_name" placeholder="Your Full Name" required style="width: 100%; height: 40px; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.88rem;">
             </div>
 
             <div>
                 <label style="font-size: 0.76rem; font-weight: 800; color: #111827; display: block; margin-bottom: 4px;">Mobile Number (for DLT SMS OTP) *</label>
-                <input type="tel" name="phone" placeholder="10-digit Mobile" pattern="[0-9]{10}" required style="width: 100%; height: 40px; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.88rem;">
+                <input type="tel" name="sender_phone" placeholder="10-digit Mobile" pattern="[0-9]{10}" required style="width: 100%; height: 40px; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.88rem;">
             </div>
 
             <div>

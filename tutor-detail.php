@@ -4,16 +4,16 @@ require_once __DIR__ . '/includes/db.php';
 
 $slug = trim($_GET['slug'] ?? '');
 if (!$slug) {
-    header("Location: tutors.php");
+    header("Location: tutor.php");
     exit;
 }
 
-$stmt = $pdo->prepare("SELECT * FROM educators WHERE slug = :slug LIMIT 1");
+$stmt = $pdo->prepare("SELECT * FROM educator WHERE slug = :slug LIMIT 1");
 $stmt->execute([':slug' => $slug]);
 $educator = $stmt->fetch();
 
 if (!$educator) {
-    die("Educator not found. <a href='tutors.php'>Return to Directory</a>");
+    die("Educator not found. <a href='tutor.php'>Return to Directory</a>");
 }
 
 $classes = json_decode($educator['classes_taught'] ?? '[]', true) ?: [];
@@ -26,7 +26,7 @@ require_once __DIR__ . '/includes/header.php';
 ?>
 
 <div style="margin-bottom: 20px;">
-    <a href="tutors.php" style="font-size: 0.85rem; color: var(--primary); font-weight: 600;">
+    <a href="tutor.php" style="font-size: 0.85rem; color: var(--primary); font-weight: 600;">
         ← Back to Teacher & Tutor Network
     </a>
 </div>

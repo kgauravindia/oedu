@@ -13,11 +13,11 @@ try {
     
     $totalHigherEd = $uniCount + $collegeCount + $instituteCount;
 
-    $totalEnquiries = (int)$pdo->query("SELECT COUNT(*) FROM enquiries")->fetchColumn();
-    $newEnquiries = (int)$pdo->query("SELECT COUNT(*) FROM enquiries WHERE status = 'new'")->fetchColumn();
+    $totalEnquiries = (int)$pdo->query("SELECT COUNT(*) FROM enquiry")->fetchColumn();
+    $newEnquiries = (int)$pdo->query("SELECT COUNT(*) FROM enquiry WHERE status = 'new'")->fetchColumn();
 
     // Recent 5 Inquiries
-    $recentEnquiriesStmt = $pdo->query("SELECT * FROM enquiries ORDER BY id DESC LIMIT 5");
+    $recentEnquiriesStmt = $pdo->query("SELECT * FROM enquiry ORDER BY id DESC LIMIT 5");
     $recentEnquiries = $recentEnquiriesStmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Top 5 States in Colleges

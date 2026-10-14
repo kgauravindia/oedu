@@ -92,17 +92,17 @@ require_once __DIR__ . '/includes/header.php';
             <div style="font-size: 0.75rem; font-weight: 700; color: #111827;">Districts</div>
             <div style="font-size: 0.68rem; color: #6B7280;">(Official Directory)</div>
         </div>
-        <a href="institutions.php" style="padding: 6px; display: block; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 6px;">
+        <a href="institution.php" style="padding: 6px; display: block; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 6px;">
             <div style="font-size: 1.5rem; font-weight: 800; color: #111827;"><?= number_format($totalUniversities) ?></div>
             <div style="font-size: 0.75rem; font-weight: 700; color: #111827;">🏛️ Universities</div>
             <div style="font-size: 0.68rem; color: var(--orange-dark); font-weight: 700;">Explore →</div>
         </a>
-        <a href="colleges.php" style="padding: 6px; display: block; background: #FFFFFF; border: 1.5px solid var(--orange); border-radius: 6px; box-shadow: 0 2px 6px rgba(255,107,0,0.15);">
+        <a href="college.php" style="padding: 6px; display: block; background: #FFFFFF; border: 1.5px solid var(--orange); border-radius: 6px; box-shadow: 0 2px 6px rgba(255,107,0,0.15);">
             <div style="font-size: 1.5rem; font-weight: 800; color: var(--orange);"><?= number_format($totalColleges) ?></div>
             <div style="font-size: 0.75rem; font-weight: 800; color: #111827;">🎓 Colleges</div>
             <div style="font-size: 0.68rem; color: var(--orange-dark); font-weight: 800;">Browse 54K+ →</div>
         </a>
-        <a href="institutes.php" style="padding: 6px; display: block; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 6px;">
+        <a href="institute.php" style="padding: 6px; display: block; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 6px;">
             <div style="font-size: 1.5rem; font-weight: 800; color: #111827;"><?= number_format($totalInstitutes) ?></div>
             <div style="font-size: 0.75rem; font-weight: 700; color: #111827;">🏢 Institutes</div>
             <div style="font-size: 0.68rem; color: var(--orange-dark); font-weight: 700;">Browse 17K+ →</div>
@@ -210,7 +210,7 @@ require_once __DIR__ . '/includes/header.php';
             </p>
         </div>
         <div style="display: flex; gap: 8px;">
-            <a href="institutions.php" class="btn btn-outline" style="font-size: 0.8rem; padding: 6px 14px;">
+            <a href="institution.php" class="btn btn-outline" style="font-size: 0.8rem; padding: 6px 14px;">
                 Full Directory Table →
             </a>
         </div>
@@ -309,17 +309,20 @@ require_once __DIR__ . '/includes/header.php';
         </p>
 
         <form action="enquiry-submit.php" method="POST" style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; text-align: left; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px;" class="oedu-enquiry-form">
+            <input type="hidden" name="redirect_url" value="index.php">
+            <input type="hidden" name="target_type" value="institution">
+            <input type="hidden" name="target_id" value="1">
             <input type="hidden" name="institution_id" value="1">
             <input type="hidden" name="source" value="national_portal_finder">
 
             <div>
                 <label style="font-size: 0.78rem; font-weight: 800; color: #111827; display: block; margin-bottom: 4px;">Student Name *</label>
-                <input type="text" name="student_name" placeholder="Your Full Name" required style="width: 100%; height: 42px; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.88rem; background: #FFF;">
+                <input type="text" name="sender_name" placeholder="Your Full Name" required style="width: 100%; height: 42px; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.88rem; background: #FFF;">
             </div>
 
             <div>
                 <label style="font-size: 0.78rem; font-weight: 800; color: #111827; display: block; margin-bottom: 4px;">Mobile Number (for DLT SMS OTP) *</label>
-                <input type="tel" name="phone" placeholder="10-digit Mobile" pattern="[0-9]{10}" required style="width: 100%; height: 42px; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.88rem; background: #FFF;">
+                <input type="tel" name="sender_phone" placeholder="10-digit Mobile" pattern="[0-9]{10}" required style="width: 100%; height: 42px; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.88rem; background: #FFF;">
             </div>
 
             <div>

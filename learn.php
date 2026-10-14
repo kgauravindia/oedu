@@ -9,10 +9,10 @@ $selectedType = trim($_GET['type'] ?? '');
 
 $sql = "
     SELECT lr.*, b.code as board_code, b.name as board_name, s.name as subject_name, el.name as level_name
-    FROM learning_resources lr
-    LEFT JOIN boards b ON lr.board_id = b.id
-    LEFT JOIN subjects s ON lr.subject_id = s.id
-    LEFT JOIN education_levels el ON lr.education_level_id = el.id
+    FROM learning_resource lr
+    LEFT JOIN board b ON lr.board_id = b.id
+    LEFT JOIN subject s ON lr.subject_id = s.id
+    LEFT JOIN education_level el ON lr.education_level_id = el.id
     WHERE 1=1
 ";
 $params = [];
@@ -40,9 +40,9 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $resources = $stmt->fetchAll();
 
-$levels = $pdo->query("SELECT * FROM education_levels WHERE is_active = 1 ORDER BY order_index ASC")->fetchAll();
-$boards = $pdo->query("SELECT * FROM boards ORDER BY id ASC")->fetchAll();
-$subjects = $pdo->query("SELECT * FROM subjects ORDER BY id ASC")->fetchAll();
+$levels = $pdo->query("SELECT * FROM education_level WHERE is_active = 1 ORDER BY order_index ASC")->fetchAll();
+$boards = $pdo->query("SELECT * FROM board ORDER BY id ASC")->fetchAll();
+$subjects = $pdo->query("SELECT * FROM subject ORDER BY id ASC")->fetchAll();
 
 $pageTitle = 'Oedu Learn — NCERT Books, Chapter Notes & Practice Tests | Oedu.in';
 require_once __DIR__ . '/includes/header.php';
