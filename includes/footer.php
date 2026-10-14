@@ -22,12 +22,6 @@
                     <p style="margin-bottom:12px; color:#9CA3AF; font-size:0.85rem; line-height:1.6;">
                         <strong style="color:#FFFFFF;">One Education Platform for Every People.</strong> Discover and compare India's premier Universities, IITs, Central Universities, and Top Colleges.
                     </p>
-                    <div style="margin-bottom:12px; font-size:0.82rem; color:#D1D5DB; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                        <span style="color:#9CA3AF;">🌱 A public project by</span>
-                        <a href="https://offerplant.com" target="_blank" rel="noopener noreferrer" style="color:#FFA35B; font-weight:700; text-decoration:none;">OfferPlant</a>
-                        <span style="color:#6B7280;">•</span>
-                        <a href="https://offerplant.com" target="_blank" rel="noopener noreferrer" style="color:#60A5FA; text-decoration:underline;">offerplant.com</a>
-                    </div>
                     <p style="font-size:0.8rem; color:#6B7280; margin-bottom:12px;">
                         SMS Notifications via DLT Sender ID: <strong style="color:#FFA35B;">OEDUIN</strong>
                     </p>
@@ -90,10 +84,9 @@
 
             <div class="footer-bottom">
                 <div>
-                    © <?= date('Y') ?> <strong style="color:#FFFFFF;">Online Education</strong> — A public project by <a href="https://offerplant.com" target="_blank" rel="noopener noreferrer" style="color: var(--orange); font-weight: 700; text-decoration: none;">OfferPlant</a> (<a href="https://offerplant.com" target="_blank" rel="noopener noreferrer" style="color: #60A5FA; text-decoration: underline;">offerplant.com</a>). All rights reserved.
+                    © <?= date('Y') ?> <strong style="color:#FFFFFF;">Online Education</strong> — A public project by <a href="https://offerplant.com" target="_blank" rel="noopener noreferrer" style="color: var(--orange); font-weight: 700; text-decoration: none;">OfferPlant</a>. All rights reserved.
                 </div>
                 <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
-                    <a href="https://offerplant.com" target="_blank" rel="noopener noreferrer" style="color: #FFA35B; font-weight: 600;">OfferPlant</a>
                     <a href="https://www.facebook.com/oeduin" target="_blank" rel="noopener noreferrer">Facebook</a>
                     <a href="government.php">UGC Guidelines</a>
                     <a href="#child-safety">Trust & Safety</a>
