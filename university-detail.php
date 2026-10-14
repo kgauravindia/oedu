@@ -30,7 +30,7 @@ if (!$univ) {
     $stmtCol->execute([':slug' => $slug]);
     $colSlug = $stmtCol->fetchColumn();
     if ($colSlug) {
-        header("Location: college-detail.php?slug=" . urlencode($colSlug));
+        header("Location: college/" . urlencode($colSlug));
         exit;
     }
 
@@ -39,11 +39,11 @@ if (!$univ) {
     $stmtInst->execute([':slug' => $slug]);
     $instSlug = $stmtInst->fetchColumn();
     if ($instSlug) {
-        header("Location: institute-detail.php?slug=" . urlencode($instSlug));
+        header("Location: institute/" . urlencode($instSlug));
         exit;
     }
 
-    $pageTitle = 'University Not Found | Oedu.in';
+    $pageTitle = 'University Not Found | Online Education';
     require_once __DIR__ . '/includes/header.php';
     echo '<div style="background:#FFF; padding:48px 16px; text-align:center; border:1px solid #E5E7EB; border-radius:12px; margin:40px auto; max-width:600px;">';
     echo '<h2 style="color:#111827; font-weight:800;">University Not Found</h2>';
@@ -54,7 +54,7 @@ if (!$univ) {
     exit;
 }
 
-$pageTitle = htmlspecialchars($univ['name']) . " ({$univ['aishe_code']}) | National University Portal — Oedu.in";
+$pageTitle = htmlspecialchars($univ['name']) . " ({$univ['aishe_code']}) | National University Portal — Online Education";
 $pageDesc = htmlspecialchars($univ['name']) . " in {$univ['district']}, {$univ['state']}. AISHE Code: {$univ['aishe_code']}. Established in {$univ['year_of_establishment']}.";
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -178,7 +178,7 @@ require_once __DIR__ . '/includes/header.php';
             <input type="hidden" name="institution_id" value="<?= (int)$univ['id'] ?>">
             <input type="hidden" name="institution_name" value="<?= htmlspecialchars($univ['name']) ?>">
             <input type="hidden" name="source" value="university_detail_page">
-            <input type="hidden" name="redirect_url" value="university-detail.php?<?= !empty($univ['slug']) ? 'slug=' . urlencode($univ['slug']) : 'id=' . (int)$univ['id'] ?>">
+            <input type="hidden" name="redirect_url" value="university/<?= !empty($univ['slug']) ? urlencode($univ['slug']) : (int)$univ['id'] ?>">
 
             <div>
                 <label style="font-size: 0.76rem; font-weight: 800; color: #111827; display: block; margin-bottom: 4px;">Student Name *</label>

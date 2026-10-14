@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin Sign In — Oedu.in Control Hub</title>
+    <title>Admin Sign In — Online Education Control Hub</title>
     <link rel="icon" type="image/png" href="../favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="login-card">
     <div class="brand-header">
         <a href="../index.php">
-            <img src="../logo_full.png" alt="Oedu.in" class="brand-img">
+            <img src="../logo_full.png" alt="Online Education" class="brand-img">
         </a>
         <h4 class="fw-bold mb-1" style="color: #0F172A;">Admin Control Hub</h4>
         <p class="text-muted small mb-0">National Higher Education Management</p>

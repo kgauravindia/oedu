@@ -2,7 +2,7 @@
 require_once __DIR__ . '/auth_check.php';
 requireAdmin();
 
-$pageTitle = 'Admin Staff & Access Control - Oedu Admin';
+$pageTitle = 'Admin Staff & Access Control - Online Education Admin';
 $msg = '';
 $msgType = 'success';
 $currentAdminId = (int)($_SESSION['admin_id'] ?? 0);

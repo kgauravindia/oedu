@@ -1,10 +1,11 @@
-# Oedu.in — National Education Platform of India
+# Online Education — National Education Platform of India
 
 <p align="center">
-  <img src="logo_full.png" alt="Oedu.in Logo" width="320">
+  <img src="logo_full.png" alt="Online Education Logo" width="320">
 </p>
 
-> **विद्या ददाति विनयम्** — One Education Platform for Every People
+> **विद्या ददाति विनयम्** — One Education Platform for Every People  
+> 📘 **Official Facebook Page:** [facebook.com/oeduin](https://www.facebook.com/oeduin)
 
 Comprehensive national directory of **72,800+** higher education institutions across all **36 States & UTs** and **780 Districts** of India, powered by official AISHE and `op_sdb` data.
 
@@ -12,7 +13,7 @@ Comprehensive national directory of **72,800+** higher education institutions ac
 
 ## 🏛️ Directory Coverage
 
-- **1,438+ Universities** — Central, State Public, Deemed, and Institutes of National Importance (IITs, IIMs, AIIMS).
+- **1,505+ Universities** — Central, State Public, Deemed, and Institutes of National Importance (IITs, IIMs, AIIMS).
 - **54,351+ Affiliated Colleges** — Government, Private Aided, and Private Un-aided colleges with affiliating university linkage.
 - **17,010+ Standalone Institutes** — Polytechnics, Nursing diploma colleges, Teacher Training institutes, Paramedical, and PGDM business schools.
 - **36 States & 780 Districts** — Cascading location filter powered by `op_sdb`.
@@ -59,7 +60,7 @@ Comprehensive national directory of **72,800+** higher education institutions ac
 ├── api/
 │   └── districts.php         # Fast JSON endpoint for cascading district dropdowns
 ├── assets/
-│   ├── css/style.css         # Oedu.in responsive design system
+│   ├── css/style.css         # Online Education responsive design system
 │   └── js/main.js            # Vanilla JS scripts (state/district cascading, language)
 ├── includes/
 │   ├── db.php.example        # Database config template (credentials gitignored)
@@ -67,7 +68,7 @@ Comprehensive national directory of **72,800+** higher education institutions ac
 │   ├── footer.php            # Footer links & national accreditation badges
 │   └── sms.php               # DLT SMS OTP sender
 ├── index.php                 # National portal homepage with stats & 3-step finder
-├── institution.php          # 1,438+ Universities directory
+├── institution.php          # 1,505+ Universities directory
 ├── university-detail.php     # Detailed university profile & affiliated institutions
 ├── college.php              # 54,351+ Affiliated colleges directory
 ├── college-detail.php        # Detailed college profile & affiliating university info

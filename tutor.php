@@ -25,7 +25,7 @@ $educators = $stmt->fetchAll();
 
 $states = $pdo->query("SELECT DISTINCT state FROM educator ORDER BY state ASC")->fetchAll(PDO::FETCH_COLUMN);
 
-$pageTitle = 'Verified Teachers & Home Tutors Network — Oedu.in';
+$pageTitle = 'Verified Teachers & Home Tutors Network — Online Education';
 require_once __DIR__ . '/includes/header.php';
 ?>
 

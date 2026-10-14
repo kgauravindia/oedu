@@ -19,7 +19,7 @@ $exams = $stmt->fetchAll();
 
 $categories = $pdo->query("SELECT DISTINCT category FROM examination ORDER BY category ASC")->fetchAll(PDO::FETCH_COLUMN);
 
-$pageTitle = 'National Entrance Exams Calendar 2027 — JEE, NEET, CUET, UPSC | Oedu.in';
+$pageTitle = 'National Entrance Exams Calendar 2027 — JEE, NEET, CUET, UPSC | Online Education';
 require_once __DIR__ . '/includes/header.php';
 ?>
 

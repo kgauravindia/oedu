@@ -1,5 +1,5 @@
 <?php
-// admin/auth_check.php — Oedu.in Admin Authentication & Database Helper
+// admin/auth_check.php — Online Education Admin Authentication & Database Helper
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }

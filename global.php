@@ -1,8 +1,8 @@
 <?php
-// global.php — Oedu Global for Indians Living Abroad (NRI Section) (.php only)
+// global.php — Online Education Global for Indians Living Abroad (NRI Section) (.php only)
 require_once __DIR__ . '/includes/db.php';
 
-$pageTitle = 'Oedu Global — Indian Education for Diaspora & NRI Families Worldwide | Oedu.in';
+$pageTitle = 'Online Education Global — Indian Education for Diaspora & NRI Families Worldwide | Online Education';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -11,7 +11,7 @@ require_once __DIR__ . '/includes/header.php';
         🌏 Connecting The Indian Diaspora
     </div>
     <h1 style="font-size: 2.4rem; font-weight: 800; line-height: 1.2; margin-bottom: 12px;">
-        Oedu Global: Indian Education for NRI Families
+        Online Education Global: Indian Education for NRI Families
     </h1>
     <p style="font-size: 1.05rem; color: #E5E7EB; max-width: 780px; line-height: 1.6; margin-bottom: 24px;">
         Serving Indian students living across the United Arab Emirates, United States, United Kingdom, Canada, Australia, and Singapore. Bringing the rich Indian curriculum, language mastery, and cultural heritage to learners worldwide.

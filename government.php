@@ -2,7 +2,7 @@
 // government.php — Government Education Directory & Initiatives (.php only)
 require_once __DIR__ . '/includes/db.php';
 
-$pageTitle = 'Government Education Directory — Ministry, NCERT, UGC, AICTE, NTA | Oedu.in';
+$pageTitle = 'Government Education Directory — Ministry, NCERT, UGC, AICTE, NTA | Online Education';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -25,7 +25,7 @@ require_once __DIR__ . '/includes/header.php';
 <!-- Important Platform Distinction Notice -->
 <div style="background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: var(--radius-md); padding: 16px 20px; margin-bottom: 32px; font-size: 0.88rem; color: #1E40AF; line-height: 1.6;">
     <strong>ℹ️ Independent Directory Notice:</strong>
-    Oedu.in is an independent national education platform that connects learners with official government databases and portals for ease of discovery. We link directly to official government bodies (Ministry of Education, NCERT, UGC, NTA) to protect students from unverified intermediaries.
+    Online Education is an independent national education platform that connects learners with official government databases and portals for ease of discovery. We link directly to official government bodies (Ministry of Education, NCERT, UGC, NTA) to protect students from unverified intermediaries.
 </div>
 
 <!-- 1. Apex Union Government Bodies -->

@@ -1,5 +1,5 @@
 <?php
-// index.php — Oedu.in National University & College Portal of India (.php only)
+// index.php — Online Education National University & College Portal of India (.php only)
 // Simple, Easy to Understand, High Contrast (White, Black, Orange)
 // Powered by op_sdb table (36 States & 780 Districts of India)
 require_once __DIR__ . '/includes/db.php';
@@ -57,8 +57,8 @@ $universities = $instStmt->fetchAll();
 $stateCountStmt = $pdo->query("SELECT state, COUNT(*) as c FROM university GROUP BY state");
 $stateCounts = $stateCountStmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
-$pageTitle = 'Oedu.in — National Higher Education Directory of India | 72,000+ Institutions';
-$pageDesc = 'Official AISHE directory of 1,438+ Universities, 54,351+ Colleges, and 17,010+ Standalone Institutes across all 36 States & 780 Districts of India.';
+$pageTitle = 'Online Education — National Higher Education Directory of India | 72,000+ Institutions';
+$pageDesc = 'Official AISHE directory of 1,505+ Universities, 54,351+ Colleges, and 17,010+ Standalone Institutes across all 36 States & 780 Districts of India.';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -77,7 +77,7 @@ require_once __DIR__ . '/includes/header.php';
         विश्वविद्यालय, महाविद्यालय एवं स्वायत्त संस्थान — One Education Platform for Every People
     </div>
     <p style="font-size: 0.96rem; color: #4B5563; max-width: 760px; margin: 0 auto 24px; line-height: 1.55;">
-        Complete, unified directory across all 36 States and 780 Districts of India. Explore 1,438+ Universities, 54,350+ Affiliated Colleges, and 17,000+ Standalone Polytechnics & Institutes.
+        Complete, unified directory across all 36 States and 780 Districts of India. Explore 1,505+ Universities, 54,350+ Affiliated Colleges, and 17,000+ Standalone Polytechnics & Institutes.
     </p>
 
     <!-- National Statistics Bar (Direct clickable portals) -->
@@ -237,7 +237,7 @@ require_once __DIR__ . '/includes/header.php';
                             </div>
                             <div style="flex: 1; min-width: 0;">
                                 <h3 style="font-size: 1.05rem; font-weight: 800; color: #111827; line-height: 1.3; margin-bottom: 2px;">
-                                    <a href="university-detail.php?slug=<?= urlencode($u['slug']) ?>"><?= htmlspecialchars($u['name']) ?></a>
+                                    <a href="university/<?= urlencode($u['slug']) ?>"><?= htmlspecialchars($u['name']) ?></a>
                                 </h3>
                                 <div style="font-size: 0.8rem; color: #6B7280;">
                                     📍 <?= htmlspecialchars($u['district'] ?: 'District N/A') ?>, <strong><?= htmlspecialchars($u['state']) ?></strong>
@@ -281,7 +281,7 @@ require_once __DIR__ . '/includes/header.php';
                             <?php endif; ?>
                         </div>
                         <div style="display: flex; gap: 6px;">
-                            <a href="university-detail.php?slug=<?= urlencode($u['slug']) ?>" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.78rem; border-color: #111827; color: #111827;">
+                            <a href="university/<?= urlencode($u['slug']) ?>" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.78rem; border-color: #111827; color: #111827;">
                                 Details →
                             </a>
                             <a href="#counseling-box" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.78rem;">

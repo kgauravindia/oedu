@@ -1,5 +1,5 @@
 <?php
-// learn.php — Oedu Learn Digital Library & NCERT Books (.php only)
+// learn.php — Online Education Learn Digital Library & NCERT Books (.php only)
 require_once __DIR__ . '/includes/db.php';
 
 $selectedLevel = trim($_GET['level'] ?? '');
@@ -44,7 +44,7 @@ $levels = $pdo->query("SELECT * FROM education_level WHERE is_active = 1 ORDER B
 $boards = $pdo->query("SELECT * FROM board ORDER BY id ASC")->fetchAll();
 $subjects = $pdo->query("SELECT * FROM subject ORDER BY id ASC")->fetchAll();
 
-$pageTitle = 'Oedu Learn — NCERT Books, Chapter Notes & Practice Tests | Oedu.in';
+$pageTitle = 'Online Education Learn — NCERT Books, Chapter Notes & Practice Tests | Online Education';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -52,7 +52,7 @@ require_once __DIR__ . '/includes/header.php';
     <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px;">
         <div>
             <h2 style="font-size: 1.8rem; font-weight: 800; color: var(--charcoal); margin-bottom: 6px;">
-                📚 Oedu Learn: Digital Learning Library
+                📚 Online Education Learn: Digital Learning Library
             </h2>
             <p style="color: var(--slate-muted); font-size: 0.95rem; max-width: 720px;">
                 Access official NCERT textbook links, original class-wise notes, chapter solutions, and practice question banks for CBSE and State Boards.

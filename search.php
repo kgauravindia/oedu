@@ -1,5 +1,5 @@
 <?php
-// search.php — Oedu.in Unified Omnibox Search Engine (.php only)
+// search.php — Online Education Unified Omnibox Search Engine (.php only)
 require_once __DIR__ . '/includes/db.php';
 
 $query = trim($_GET['q'] ?? '');
@@ -112,7 +112,7 @@ if ($query !== '' || $state !== '' || $type !== 'all') {
 
 $totalResults = count($resources) + count($educators) + count($universitiesList) + count($collegesList) + count($institutesList) + count($examinations) + count($scholarships);
 
-$pageTitle = 'Search Results: ' . ($query ?: 'All Categories') . ' — Oedu.in';
+$pageTitle = 'Search Results: ' . ($query ?: 'All Categories') . ' — Online Education';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -182,7 +182,7 @@ require_once __DIR__ . '/includes/header.php';
                             <?php endif; ?>
                         </div>
                         <h4 style="font-size: 1rem; font-weight: 700; color: var(--charcoal); line-height: 1.35; margin-bottom: 6px;">
-                            <a href="university-detail.php?id=<?= $univ['id'] ?>" style="color: var(--charcoal); text-decoration: none;">
+                            <a href="university/<?= urlencode($univ['slug']) ?>" style="color: var(--charcoal); text-decoration: none;">
                                 <?= htmlspecialchars($univ['name']) ?>
                             </a>
                         </h4>
@@ -194,7 +194,7 @@ require_once __DIR__ . '/includes/header.php';
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center; border-top: 1px solid #F3F4F6; padding-top: 12px;">
-                        <a href="university-detail.php?id=<?= $univ['id'] ?>" class="btn btn-primary" style="flex: 1; text-align: center; font-size: 0.82rem; padding: 7px 12px;">
+                        <a href="university/<?= urlencode($univ['slug']) ?>" class="btn btn-primary" style="flex: 1; text-align: center; font-size: 0.82rem; padding: 7px 12px;">
                             View Details
                         </a>
                         <?php if (!empty($univ['website']) && $univ['website'] !== '-'): ?>
@@ -237,7 +237,7 @@ require_once __DIR__ . '/includes/header.php';
                             <?php endif; ?>
                         </div>
                         <h4 style="font-size: 1rem; font-weight: 700; color: var(--charcoal); line-height: 1.35; margin-bottom: 6px;">
-                            <a href="college-detail.php?slug=<?= urlencode($colItem['slug']) ?>" style="color: var(--charcoal); text-decoration: none;">
+                            <a href="college/<?= urlencode($colItem['slug']) ?>" style="color: var(--charcoal); text-decoration: none;">
                                 <?= htmlspecialchars($colItem['name']) ?>
                             </a>
                         </h4>
@@ -251,7 +251,7 @@ require_once __DIR__ . '/includes/header.php';
                         <?php endif; ?>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center; border-top: 1px solid #F3F4F6; padding-top: 12px;">
-                        <a href="college-detail.php?slug=<?= urlencode($colItem['slug']) ?>" class="btn btn-primary" style="flex: 1; text-align: center; font-size: 0.82rem; padding: 7px 12px;">
+                        <a href="college/<?= urlencode($colItem['slug']) ?>" class="btn btn-primary" style="flex: 1; text-align: center; font-size: 0.82rem; padding: 7px 12px;">
                             College Profile →
                         </a>
                         <?php if (!empty($colItem['website'])): 
@@ -293,7 +293,7 @@ require_once __DIR__ . '/includes/header.php';
                             <?php endif; ?>
                         </div>
                         <h4 style="font-size: 1rem; font-weight: 700; color: var(--charcoal); line-height: 1.35; margin-bottom: 6px;">
-                            <a href="institute-detail.php?slug=<?= urlencode($insItem['slug']) ?>" style="color: var(--charcoal); text-decoration: none;">
+                            <a href="institute/<?= urlencode($insItem['slug']) ?>" style="color: var(--charcoal); text-decoration: none;">
                                 <?= htmlspecialchars($insItem['name']) ?>
                             </a>
                         </h4>
@@ -305,7 +305,7 @@ require_once __DIR__ . '/includes/header.php';
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center; border-top: 1px solid #F3F4F6; padding-top: 12px;">
-                        <a href="institute-detail.php?slug=<?= urlencode($insItem['slug']) ?>" class="btn btn-primary" style="flex: 1; text-align: center; font-size: 0.82rem; padding: 7px 12px;">
+                        <a href="institute/<?= urlencode($insItem['slug']) ?>" class="btn btn-primary" style="flex: 1; text-align: center; font-size: 0.82rem; padding: 7px 12px;">
                             Institute Profile →
                         </a>
                         <a href="institute.php?type=<?= urlencode($insItem['institute_type'] ?? '') ?>" class="btn btn-outline" style="font-size: 0.82rem; padding: 7px 12px;">

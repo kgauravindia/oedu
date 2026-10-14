@@ -21,7 +21,7 @@ $subjects = json_decode($educator['subjects_taught'] ?? '[]', true) ?: [];
 $modes = json_decode($educator['teaching_modes'] ?? '[]', true) ?: [];
 $languages = json_decode($educator['languages'] ?? '[]', true) ?: ['Hindi', 'English'];
 
-$pageTitle = $educator['name'] . ' — ' . $educator['headline'] . ' | Oedu.in';
+$pageTitle = $educator['name'] . ' — ' . $educator['headline'] . ' | Online Education';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -185,7 +185,7 @@ require_once __DIR__ . '/includes/header.php';
         <!-- Child Safety Guarantee Box -->
         <div style="background: #F8FAF9; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; font-size: 0.8rem; color: var(--slate-body); line-height: 1.5;">
             🛡️ <strong>Child Safety & Minor Privacy:</strong>
-            Oedu.in never reveals personal contact numbers of student minors publicly. Tutors are contacted via parent accounts, and all initial communications are logged for trust, safety, and moderation.
+            Online Education never reveals personal contact numbers of student minors publicly. Tutors are contacted via parent accounts, and all initial communications are logged for trust, safety, and moderation.
         </div>
     </aside>
 </div>

@@ -1,0 +1,22 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    Options -MultiViews
+
+    # If the requested file or directory exists physically, serve directly
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Clean URL for University: /university/university-name
+    RewriteRule ^university/([^/]+)/?$ university-detail.php?slug=$1 [L,QSA]
+
+    # Clean URL for College: /college/college-name
+    RewriteRule ^college/([^/]+)/?$ college-detail.php?slug=$1 [L,QSA]
+
+    # Clean URL for Institute: /institute/institute-name
+    RewriteRule ^institute/([^/]+)/?$ institute-detail.php?slug=$1 [L,QSA]
+
+    # XML Sitemap routes
+    RewriteRule ^sitemap\.xml$ sitemap.php [L,QSA]
+    RewriteRule ^sitemap-([a-z0-9\-]+)\.xml$ sitemap.php?section=$1 [L,QSA]
+</IfModule>

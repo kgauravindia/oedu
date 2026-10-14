@@ -25,7 +25,7 @@ if ($slug) {
 $inst = $stmt->fetch();
 
 if (!$inst) {
-    $pageTitle = 'Institute Not Found | Oedu.in';
+    $pageTitle = 'Institute Not Found | Online Education';
     require_once __DIR__ . '/includes/header.php';
     echo '<div style="background:#FFF; padding:48px 16px; text-align:center; border:1px solid #E5E7EB; border-radius:12px; margin:40px auto; max-width:600px;">';
     echo '<h2 style="color:#111827; font-weight:800;">Institute Not Found</h2>';
@@ -65,7 +65,7 @@ $mgmtColor = $isGovt ? '#166534' : '#1E40AF';
 $mgmtBg = $isGovt ? '#F0FDF4' : '#EFF6FF';
 $mgmtBorder = $isGovt ? '#BBF7D0' : '#BFDBFE';
 
-$pageTitle = htmlspecialchars($inst['name']) . " ({$inst['aishe_code']}) | Standalone Institute Portal — Oedu.in";
+$pageTitle = htmlspecialchars($inst['name']) . " ({$inst['aishe_code']}) | Standalone Institute Portal — Online Education";
 $pageDesc = htmlspecialchars($inst['name']) . " in {$inst['district']}, {$inst['state']}. AISHE Code: {$inst['aishe_code']}. Category: {$inst['institute_type']}.";
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -188,14 +188,14 @@ require_once __DIR__ . '/includes/header.php';
                                     <?= htmlspecialchars($ri['aishe_code']) ?>
                                 </span>
                                 <h4 style="font-size: 0.88rem; font-weight: 800; color: #111827; margin: 6px 0 3px; line-height: 1.3;">
-                                    <a href="institute-detail.php?slug=<?= urlencode($ri['slug']) ?>"><?= htmlspecialchars($ri['name']) ?></a>
+                                    <a href="institute/<?= urlencode($ri['slug']) ?>"><?= htmlspecialchars($ri['name']) ?></a>
                                 </h4>
                                 <div style="font-size: 0.75rem; color: #64748B;">
                                     📍 <?= htmlspecialchars($ri['district']) ?>, <?= htmlspecialchars($ri['state']) ?>
                                 </div>
                             </div>
                             <div style="margin-top: 10px;">
-                                <a href="institute-detail.php?slug=<?= urlencode($ri['slug']) ?>" style="font-size: 0.75rem; font-weight: 700; color: var(--orange-dark);">
+                                <a href="institute/<?= urlencode($ri['slug']) ?>" style="font-size: 0.75rem; font-weight: 700; color: var(--orange-dark);">
                                     View Institute Profile →
                                 </a>
                             </div>
@@ -220,7 +220,7 @@ require_once __DIR__ . '/includes/header.php';
             <form action="enquiry-submit.php" method="POST" class="oedu-enquiry-form">
                 <input type="hidden" name="target_type" value="institute">
                 <input type="hidden" name="target_id" value="<?= (int)$inst['id'] ?>">
-                <input type="hidden" name="redirect_url" value="institute-detail.php?<?= !empty($inst['slug']) ? 'slug=' . urlencode($inst['slug']) : 'id=' . (int)$inst['id'] ?>">
+                <input type="hidden" name="redirect_url" value="institute/<?= !empty($inst['slug']) ? urlencode($inst['slug']) : (int)$inst['id'] ?>">
 
                 <div style="margin-bottom: 10px;">
                     <label style="font-size: 0.74rem; font-weight: 700; color: #111827; display: block; margin-bottom: 3px;">Full Name *</label>

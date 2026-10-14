@@ -2,7 +2,7 @@
 require_once __DIR__ . '/auth_check.php';
 requireAdmin();
 
-$pageTitle = 'Portal Settings - Oedu Admin';
+$pageTitle = 'Portal Settings - Online Education Admin';
 $msg = '';
 $msgType = 'success';
 
@@ -17,11 +17,12 @@ $pdo->exec("
 
 // Defaults
 $defaultSettings = [
-    'site_name' => 'Oedu.in',
+    'site_name' => 'Online Education',
     'site_tagline' => 'National Higher Education & Institutional Directory',
     'contact_email' => 'contact@oedu.in',
     'contact_phone' => '+91 98765 43210',
     'whatsapp_number' => '+919876543210',
+    'facebook_url' => 'https://www.facebook.com/oeduin',
     'enable_inquiries' => '1',
     'meta_description' => 'Comprehensive national database of Universities, Colleges, and Standalone Institutions of India.'
 ];
@@ -119,6 +120,10 @@ $settings = array_merge($defaultSettings, $dbSettings);
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-dark">WhatsApp Helpline Number</label>
                                     <input type="text" name="whatsapp_number" class="form-control" value="<?= htmlspecialchars($settings['whatsapp_number']) ?>" placeholder="+919876543210">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-dark">Official Facebook Page</label>
+                                    <input type="url" name="facebook_url" class="form-control" value="<?= htmlspecialchars($settings['facebook_url']) ?>" placeholder="https://www.facebook.com/oeduin">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-dark">Student Admission Leads</label>

@@ -1,4 +1,4 @@
-// assets/js/main.js — Oedu.in Interactive Scripts (Vanilla JavaScript)
+// assets/js/main.js — Online Education Interactive Scripts (Vanilla JavaScript)
 // Powered by op_sdb table for Indian States & Districts
 
 document.addEventListener('DOMContentLoaded', function () {

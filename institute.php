@@ -93,7 +93,7 @@ function getInstituteIcon($type) {
     return '🏢';
 }
 
-$pageTitle = 'All Standalone Institutes in India — Polytechnics, Nursing & Teacher Training (17,010+) | Oedu.in';
+$pageTitle = 'All Standalone Institutes in India — Polytechnics, Nursing & Teacher Training (17,010+) | Online Education';
 $pageDesc = "Official AISHE directory of {$totalInstitutesOverall} Standalone Institutions across India. Explore Polytechnic colleges, Nursing diploma institutes, Teacher Training, Paramedical and PGDM institutions.";
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -113,7 +113,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <a href="institution.php" class="btn btn-outline" style="font-size: 0.85rem; padding: 9px 16px;">
-                🏛️ Universities (1,438)
+                🏛️ Universities (1,505)
             </a>
             <a href="college.php" class="btn btn-outline" style="font-size: 0.85rem; padding: 9px 16px;">
                 🎓 Colleges (54K+)
@@ -236,7 +236,7 @@ require_once __DIR__ . '/includes/header.php';
                         </div>
                         <div style="flex: 1; min-width: 0;">
                             <h3 style="font-size: 1.02rem; font-weight: 800; color: #111827; line-height: 1.3; margin-bottom: 2px;">
-                                <a href="institute-detail.php?slug=<?= urlencode($inst['slug']) ?>"><?= htmlspecialchars($inst['name']) ?></a>
+                                <a href="institute/<?= urlencode($inst['slug']) ?>"><?= htmlspecialchars($inst['name']) ?></a>
                             </h3>
                             <div style="font-size: 0.8rem; color: #6B7280;">
                                 📍 <?= htmlspecialchars($inst['district'] ?: 'District N/A') ?>, <strong><?= htmlspecialchars($inst['state'] ?: 'India') ?></strong>
@@ -280,7 +280,7 @@ require_once __DIR__ . '/includes/header.php';
                         </span>
                     </div>
                     <div style="display: flex; gap: 6px;">
-                        <a href="institute-detail.php?slug=<?= urlencode($inst['slug']) ?>" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.78rem; border-color: #111827; color: #111827;">
+                        <a href="institute/<?= urlencode($inst['slug']) ?>" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.78rem; border-color: #111827; color: #111827;">
                             Details →
                         </a>
                         <a href="index.php#counseling-box" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.78rem;">

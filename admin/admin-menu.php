@@ -3,7 +3,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
 // Quick menu badge counts (cached or lightweight query)
 $menuBadgeCounts = [
-    'universities' => '1.4k',
+    'universities' => '1.5k',
     'colleges' => '54k',
     'institutes' => '17k',
     'enquiries' => 0
@@ -28,7 +28,7 @@ if (isset($pdo)) {
             <span style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, #FF6B00 0%, #FF8533 100%); color: #fff; font-weight: 800; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(255, 107, 0, 0.35);">
                 O
             </span>
-            <span>Oedu<span style="color: #FFFFFF;">.in</span></span>
+            <span>Online <span style="color: #FFFFFF;">Education</span></span>
         </a>
         <button type="button" class="sidebar-toggle-btn d-none d-lg-flex" onclick="toggleSidebarCollapse()" title="Toggle Sidebar Width">
             <i class="fas fa-chevron-left" id="sidebarCollapseIcon"></i>
@@ -86,6 +86,11 @@ if (isset($pdo)) {
         <a href="change-password.php" class="nav-link-custom <?= $currentPage === 'change-password.php' ? 'active' : '' ?>">
             <i class="fas fa-key text-warning"></i>
             <span>Change Password</span>
+        </a>
+
+        <a href="sitemap.php" class="nav-link-custom <?= $currentPage === 'sitemap.php' ? 'active' : '' ?>">
+            <i class="fas fa-sitemap text-warning"></i>
+            <span>XML Sitemaps</span>
         </a>
 
         <a href="settings.php" class="nav-link-custom <?= $currentPage === 'settings.php' ? 'active' : '' ?>">

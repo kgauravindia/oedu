@@ -2,7 +2,7 @@
 require_once __DIR__ . '/auth_check.php';
 requireAdmin();
 
-$pageTitle = 'Student Admission Inquiries - Oedu Admin';
+$pageTitle = 'Student Admission Inquiries - Online Education Admin';
 $msg = '';
 $msgType = 'success';
 
@@ -176,7 +176,7 @@ $enquiries = $dataStmt->fetchAll(PDO::FETCH_ASSOC);
                                     } else {
                                         $waNumber = $cleanPhone;
                                     }
-                                    $waText = urlencode("Hello " . $enq['sender_name'] . ", this is regarding your inquiry on Oedu.in.");
+                                    $waText = urlencode("Hello " . $enq['sender_name'] . ", this is regarding your inquiry on Online Education.");
                                 ?>
                                     <tr>
                                         <td class="text-muted fw-bold">#<?= (int)$enq['id'] ?></td>

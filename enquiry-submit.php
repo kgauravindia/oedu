@@ -49,7 +49,7 @@ function redirectWithParam(string $url, string $paramName, string $message): voi
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title><?= $paramName === 'error' ? 'Notice' : 'Success' ?> - Oedu.in</title>
+        <title><?= $paramName === 'error' ? 'Notice' : 'Success' ?> - Online Education</title>
         <link rel="stylesheet" href="assets/css/style.css">
     </head>
     <body style="background:#F8FAFC; display:flex; align-items:center; justify-content:center; min-height:100vh; font-family:sans-serif; margin:0; padding:20px;">

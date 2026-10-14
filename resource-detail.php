@@ -1,5 +1,5 @@
 <?php
-// resource-detail.php — Oedu Learn Chapter & Textbook Reader (.php only)
+// resource-detail.php — Online Education Learn Chapter & Textbook Reader (.php only)
 require_once __DIR__ . '/includes/db.php';
 
 $slug = trim($_GET['slug'] ?? '');
@@ -35,13 +35,13 @@ $relStmt = $pdo->prepare("
 $relStmt->execute([':sid' => $resource['subject_id'], ':id' => $resource['id']]);
 $relatedResources = $relStmt->fetchAll();
 
-$pageTitle = $resource['title'] . ' — Oedu Learn | Oedu.in';
+$pageTitle = $resource['title'] . ' — Online Education Learn | Online Education';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
 <div style="margin-bottom: 20px;">
     <a href="learn.php" style="font-size: 0.85rem; color: var(--primary); font-weight: 600;">
-        ← Back to Oedu Learn Library
+        ← Back to Online Education Learn Library
     </a>
 </div>
 

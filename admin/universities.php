@@ -2,7 +2,7 @@
 require_once __DIR__ . '/auth_check.php';
 requireAdmin();
 
-$pageTitle = 'Manage Universities - Oedu Admin';
+$pageTitle = 'Manage Universities - Online Education Admin';
 $msg = '';
 $msgType = 'success';
 
@@ -250,7 +250,7 @@ $types = $pdo->query("SELECT DISTINCT type FROM university WHERE type IS NOT NUL
                                         </td>
                                         <td style="text-align: right;">
                                             <div class="btn-group btn-group-sm">
-                                                <a href="../university-detail.php?slug=<?= urlencode($u['slug'] ?? '') ?>" target="_blank" class="btn btn-light border py-1 px-2" title="View Public Page">
+                                                <a href="../university/<?= urlencode($u['slug'] ?? '') ?>" target="_blank" class="btn btn-light border py-1 px-2" title="View Public Page">
                                                     <i class="fas fa-external-link-alt text-primary"></i>
                                                 </a>
                                                 <button class="btn btn-light border py-1 px-2" title="Edit" onclick='openEditModal(<?= json_encode($u) ?>)'>

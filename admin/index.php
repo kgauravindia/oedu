@@ -2,7 +2,7 @@
 require_once __DIR__ . '/auth_check.php';
 requireAdmin();
 
-$pageTitle = 'Executive Dashboard - Oedu Admin';
+$pageTitle = 'Executive Dashboard — Online Education Admin';
 
 // Fetch Core Metrics
 try {

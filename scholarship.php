@@ -17,7 +17,7 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $scholarships = $stmt->fetchAll();
 
-$pageTitle = 'National & State Education Scholarships 2026-27 | Oedu.in';
+$pageTitle = 'National & State Education Scholarships 2026-27 | Online Education';
 require_once __DIR__ . '/includes/header.php';
 ?>
 

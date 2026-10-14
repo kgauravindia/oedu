@@ -2,7 +2,7 @@
 require_once __DIR__ . '/auth_check.php';
 requireAdmin();
 
-$pageTitle = 'Affiliated Colleges (54K+) - Oedu Admin';
+$pageTitle = 'Affiliated Colleges (54K+) - Online Education Admin';
 $msg = '';
 $msgType = 'success';
 
@@ -279,7 +279,7 @@ $managements = $pdo->query("SELECT DISTINCT management FROM college WHERE manage
                                         </td>
                                         <td style="text-align: right;">
                                             <div class="btn-group btn-group-sm">
-                                                <a href="../college-detail.php?slug=<?= urlencode($c['slug'] ?? '') ?>" target="_blank" class="btn btn-light border py-1 px-2" title="View Public Page">
+                                                <a href="../college/<?= urlencode($c['slug'] ?? '') ?>" target="_blank" class="btn btn-light border py-1 px-2" title="View Public Page">
                                                     <i class="fas fa-external-link-alt text-primary"></i>
                                                 </a>
                                                 <button class="btn btn-light border py-1 px-2" title="Edit" onclick='openEditModal(<?= json_encode($c) ?>)'>

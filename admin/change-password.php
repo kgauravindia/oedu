@@ -2,7 +2,7 @@
 require_once __DIR__ . '/auth_check.php';
 requireAdmin();
 
-$pageTitle = 'Change Password - Oedu Admin';
+$pageTitle = 'Change Password - Online Education Admin';
 $msg = '';
 $msgType = 'success';
 $adminId = (int)($_SESSION['admin_id'] ?? 0);

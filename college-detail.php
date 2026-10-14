@@ -25,7 +25,7 @@ if ($slug) {
 $college = $stmt->fetch();
 
 if (!$college) {
-    $pageTitle = 'College Not Found | Oedu.in';
+    $pageTitle = 'College Not Found | Online Education';
     require_once __DIR__ . '/includes/header.php';
     echo '<div style="background:#FFF; padding:48px 16px; text-align:center; border:1px solid #E5E7EB; border-radius:12px; margin:40px auto; max-width:600px;">';
     echo '<h2 style="color:#111827; font-weight:800;">College Not Found</h2>';
@@ -53,7 +53,7 @@ $mgmtColor = $isGovt ? '#166534' : '#1E40AF';
 $mgmtBg = $isGovt ? '#F0FDF4' : '#EFF6FF';
 $mgmtBorder = $isGovt ? '#BBF7D0' : '#BFDBFE';
 
-$pageTitle = htmlspecialchars($college['name']) . " ({$college['aishe_code']}) | National College Portal — Oedu.in";
+$pageTitle = htmlspecialchars($college['name']) . " ({$college['aishe_code']}) | National College Portal — Online Education";
 $pageDesc = htmlspecialchars($college['name']) . " in {$college['district']}, {$college['state']}. AISHE Code: {$college['aishe_code']}. Affiliated to {$college['university_name']}.";
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -222,14 +222,14 @@ require_once __DIR__ . '/includes/header.php';
                                     <?= htmlspecialchars($rc['aishe_code']) ?>
                                 </span>
                                 <h4 style="font-size: 0.88rem; font-weight: 800; color: #111827; margin: 6px 0 3px; line-height: 1.3;">
-                                    <a href="college-detail.php?slug=<?= urlencode($rc['slug']) ?>"><?= htmlspecialchars($rc['name']) ?></a>
+                                    <a href="college/<?= urlencode($rc['slug']) ?>"><?= htmlspecialchars($rc['name']) ?></a>
                                 </h4>
                                 <div style="font-size: 0.75rem; color: #64748B;">
                                     📍 <?= htmlspecialchars($rc['district']) ?>, <?= htmlspecialchars($rc['state']) ?>
                                 </div>
                             </div>
                             <div style="margin-top: 10px;">
-                                <a href="college-detail.php?slug=<?= urlencode($rc['slug']) ?>" style="font-size: 0.75rem; font-weight: 700; color: var(--orange-dark);">
+                                <a href="college/<?= urlencode($rc['slug']) ?>" style="font-size: 0.75rem; font-weight: 700; color: var(--orange-dark);">
                                     View College Details →
                                 </a>
                             </div>
@@ -254,7 +254,7 @@ require_once __DIR__ . '/includes/header.php';
             <form action="enquiry-submit.php" method="POST" class="oedu-enquiry-form">
                 <input type="hidden" name="target_type" value="college">
                 <input type="hidden" name="target_id" value="<?= (int)$college['id'] ?>">
-                <input type="hidden" name="redirect_url" value="college-detail.php?<?= !empty($college['slug']) ? 'slug=' . urlencode($college['slug']) : 'id=' . (int)$college['id'] ?>">
+                <input type="hidden" name="redirect_url" value="college/<?= !empty($college['slug']) ? urlencode($college['slug']) : (int)$college['id'] ?>">
 
                 <div style="margin-bottom: 10px;">
                     <label style="font-size: 0.74rem; font-weight: 700; color: #111827; display: block; margin-bottom: 3px;">Full Name *</label>

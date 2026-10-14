@@ -77,7 +77,7 @@ $totalCollegesOverall = (int) $pdo->query("SELECT COUNT(*) FROM college")->fetch
 $totalStatesOpSdb = (int) $pdo->query("SELECT COUNT(DISTINCT state) FROM op_sdb")->fetchColumn();
 $totalDistrictsOpSdb = (int) $pdo->query("SELECT COUNT(DISTINCT district) FROM op_sdb")->fetchColumn();
 
-$pageTitle = 'All Affiliated Colleges in India — National College Directory (54,350+) | Oedu.in';
+$pageTitle = 'All Affiliated Colleges in India — National College Directory (54,350+) | Online Education';
 $pageDesc = "Browse official AISHE directory of {$totalCollegesOverall} Affiliated Colleges across all {$totalStatesOpSdb} States & UTs. Filter by Affiliating University, District, Management, and Location.";
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -97,7 +97,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <a href="institution.php" class="btn btn-outline" style="font-size: 0.85rem; padding: 9px 16px;">
-                🏛️ Universities (1,438)
+                🏛️ Universities (1,505)
             </a>
             <a href="institute.php" class="btn btn-outline" style="font-size: 0.85rem; padding: 9px 16px;">
                 🏢 Standalone Institutes (17K+)
@@ -218,7 +218,7 @@ require_once __DIR__ . '/includes/header.php';
                         </div>
                         <div style="flex: 1; min-width: 0;">
                             <h3 style="font-size: 1.02rem; font-weight: 800; color: #111827; line-height: 1.3; margin-bottom: 2px;">
-                                <a href="college-detail.php?slug=<?= urlencode($c['slug']) ?>"><?= htmlspecialchars($c['name']) ?></a>
+                                <a href="college/<?= urlencode($c['slug']) ?>"><?= htmlspecialchars($c['name']) ?></a>
                             </h3>
                             <div style="font-size: 0.8rem; color: #6B7280;">
                                 📍 <?= htmlspecialchars($c['district'] ?: 'District N/A') ?>, <strong><?= htmlspecialchars($c['state'] ?: 'India') ?></strong>
@@ -281,7 +281,7 @@ require_once __DIR__ . '/includes/header.php';
                         <?php endif; ?>
                     </div>
                     <div style="display: flex; gap: 6px;">
-                        <a href="college-detail.php?slug=<?= urlencode($c['slug']) ?>" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.78rem; border-color: #111827; color: #111827;">
+                        <a href="college/<?= urlencode($c['slug']) ?>" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.78rem; border-color: #111827; color: #111827;">
                             Details →
                         </a>
                         <a href="index.php#counseling-box" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.78rem;">

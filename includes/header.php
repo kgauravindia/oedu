@@ -1,10 +1,10 @@
 <?php
-// includes/header.php - Modular Header for Oedu.in (.php only)
+// includes/header.php - Modular Header for Online Education (.php only)
 if (!isset($pageTitle)) {
-    $pageTitle = 'National University & College Directory of India | Oedu.in — Higher Education Portal';
+    $pageTitle = 'National University & College Directory of India | Online Education — Higher Education Portal';
 }
 if (!isset($pageDesc)) {
-    $pageDesc = "Discover and compare Central Universities, IITs, IIMs, AIIMS, State Universities, Autonomous Colleges, NIRF Rankings, and CUET/Entrance Cut-offs on Oedu.in.";
+    $pageDesc = "Discover and compare Central Universities, IITs, IIMs, AIIMS, State Universities, Autonomous Colleges, NIRF Rankings, and CUET/Entrance Cut-offs on Online Education.";
 }
 ?>
 <!DOCTYPE html>
@@ -15,6 +15,17 @@ if (!isset($pageDesc)) {
     <meta name="theme-color" content="#0B0F19">
     <title><?= htmlspecialchars($pageTitle) ?></title>
     <meta name="description" content="<?= htmlspecialchars($pageDesc) ?>">
+
+    <!-- Base URL for Clean Routing (/university/, /college/, /institute/) -->
+    <?php
+    $scriptDir = dirname($_SERVER['SCRIPT_NAME'] ?? '/');
+    $scriptDir = str_replace('\\', '/', $scriptDir);
+    $appBasePath = rtrim($scriptDir, '/') . '/';
+    if ($appBasePath === '//') {
+        $appBasePath = '/';
+    }
+    ?>
+    <base href="<?= htmlspecialchars($appBasePath) ?>">
 
     <!-- Brand Favicons -->
     <link rel="icon" type="image/png" href="logo.png">
@@ -43,6 +54,7 @@ if (!isset($pageDesc)) {
             <div class="utility-links">
                 <a href="government.php">🏛️ UGC & MoE Portals</a>
                 <a href="global.php">🌏 NRI Admissions</a>
+                <a href="https://www.facebook.com/oeduin" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:4px;"><svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> Facebook</a>
                 <a href="#child-safety">🛡️ Trust & Safety</a>
                 <span style="color: #4B5563;">|</span>
                 <span id="lang-en-btn" style="cursor: pointer; font-weight: 700; color: #FFFFFF;">EN</span>
@@ -57,14 +69,14 @@ if (!isset($pageDesc)) {
         <div class="header-inner">
             <div class="header-top-row">
                 <!-- Brand with High-Res Official Logo -->
-                <a href="index.php" class="brand-logo" title="Oedu.in — National Education Platform of India">
-                    <img src="logo_full.png" alt="Oedu.in — विद्या ददाति विनयम्" class="brand-full-logo">
+                <a href="index.php" class="brand-logo" title="Online Education — National Education Platform of India">
+                    <img src="logo_full.png" alt="Online Education — विद्या ददाति विनयम्" class="brand-full-logo">
                 </a>
 
                 <!-- Quick Action Links -->
                 <div class="header-actions">
                     <a href="institution.php" class="btn btn-outline" style="font-size: 0.8rem;">
-                        🏛️ Universities (1,438)
+                        🏛️ Universities (1,505)
                     </a>
                     <a href="college.php" class="btn btn-primary" style="font-size: 0.8rem;">
                         🎓 Colleges (54K+)
@@ -102,7 +114,7 @@ if (!isset($pageDesc)) {
                     🏠 Home
                 </a>
                 <a href="institution.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'institution.php' ? 'active' : '' ?>">
-                    🏛️ Universities <span class="ribbon-badge">1,438 Directory</span>
+                    🏛️ Universities <span class="ribbon-badge">1,505 Directory</span>
                 </a>
                 <a href="college.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'college.php' ? 'active' : '' ?>">
                     🎓 Affiliated Colleges <span class="ribbon-badge">54,351 Directory</span>

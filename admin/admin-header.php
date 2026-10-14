@@ -13,7 +13,7 @@ $admin_initial = strtoupper(substr($admin_name, 0, 1));
         </button>
         <div class="d-none d-lg-block">
             <h5 class="mb-0 fw-bold" style="font-family: 'Plus Jakarta Sans', sans-serif; color: #0F172A; font-size: 1.05rem;">
-                Oedu.in <span class="badge" style="background: var(--primary); font-size: 0.7rem; vertical-align: middle;">Control Hub</span>
+                Online Education <span class="badge" style="background: var(--primary); font-size: 0.7rem; vertical-align: middle;">Control Hub</span>
             </h5>
         </div>
     </div>
