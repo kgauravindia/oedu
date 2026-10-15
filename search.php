@@ -1,12 +1,14 @@
 <?php
 // search.php — Online Education Unified Omnibox Search Engine
+// Sourced from official AISHE, CBSE Registry, and National Educational Databases
 require_once __DIR__ . '/includes/db.php';
 
 $query = trim($_GET['q'] ?? '');
 $type = $_GET['type'] ?? 'all';
 $state = trim($_GET['state'] ?? '');
+$district = trim($_GET['district'] ?? '');
 
-// Preload state list for in-page state filtering
+// Preload state list for in-page state filtering from op_sdb
 $allStates = [];
 try {
     $statesStmt = $pdo->query("SELECT DISTINCT state FROM op_sdb WHERE state IS NOT NULL AND state != '' ORDER BY state ASC");
@@ -15,16 +17,31 @@ try {
     $allStates = [];
 }
 
+// Preload district list if a state is currently selected
+$allDistricts = [];
+if ($state !== '') {
+    try {
+        $distStmt = $pdo->prepare("SELECT DISTINCT district FROM op_sdb WHERE state = ? AND district IS NOT NULL AND district != '' ORDER BY district ASC");
+        $distStmt->execute([$state]);
+        $allDistricts = $distStmt->fetchAll(PDO::FETCH_COLUMN);
+    } catch (Exception $e) {
+        $allDistricts = [];
+    }
+}
+
 // Initialize all result lists to prevent undefined variable errors
 $resources = [];
 $educators = [];
 $universitiesList = [];
+$schoolsList = [];
 $collegesList = [];
 $institutesList = [];
 $examinations = [];
 $scholarships = [];
 
-if ($query !== '' || $state !== '' || $type !== 'all') {
+$isSearchApplied = ($query !== '' || $state !== '' || $district !== '' || $type !== 'all');
+
+if ($isSearchApplied) {
     $searchWildcard = "%{$query}%";
     $limit = ($type === 'all') ? 16 : 40;
 
@@ -40,14 +57,49 @@ if ($query !== '' || $state !== '' || $type !== 'all') {
             $sql .= " AND state = ?";
             $params[] = $state;
         }
-        $sql .= " ORDER BY (CASE WHEN name LIKE ? THEN 1 ELSE 2 END), name ASC LIMIT {$limit}";
-        $params[] = $query !== '' ? "{$query}%" : '%';
+        if ($district !== '') {
+            $sql .= " AND district LIKE ?";
+            $params[] = "%{$district}%";
+        }
+        if ($query !== '') {
+            $sql .= " ORDER BY (CASE WHEN name LIKE ? THEN 1 ELSE 2 END), name ASC LIMIT {$limit}";
+            $params[] = "{$query}%";
+        } else {
+            $sql .= " ORDER BY name ASC LIMIT {$limit}";
+        }
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         $universitiesList = $stmt->fetchAll();
     }
 
-    // 2. Colleges (AISHE Directory)
+    // 2. CBSE Schools (Official CBSE Directory - 33,180+ Schools)
+    if (in_array($type, ['all', 'schools', 'institutions'])) {
+        $sql = "SELECT * FROM `school` WHERE 1=1";
+        $params = [];
+        if ($query !== '') {
+            $sql .= " AND (name LIKE ? OR affiliation_no LIKE ? OR school_code LIKE ? OR district LIKE ? OR state LIKE ? OR head_name LIKE ?)";
+            $params = array_merge($params, [$searchWildcard, $searchWildcard, $searchWildcard, $searchWildcard, $searchWildcard, $searchWildcard]);
+        }
+        if ($state !== '') {
+            $sql .= " AND state = ?";
+            $params[] = $state;
+        }
+        if ($district !== '') {
+            $sql .= " AND district LIKE ?";
+            $params[] = "%{$district}%";
+        }
+        if ($query !== '') {
+            $sql .= " ORDER BY (CASE WHEN name LIKE ? THEN 1 ELSE 2 END), name ASC LIMIT {$limit}";
+            $params[] = "{$query}%";
+        } else {
+            $sql .= " ORDER BY name ASC LIMIT {$limit}";
+        }
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $schoolsList = $stmt->fetchAll();
+    }
+
+    // 3. Affiliated Colleges (AISHE Directory - 54,000+ Colleges)
     if (in_array($type, ['all', 'colleges', 'institutions'])) {
         $sql = "SELECT * FROM college WHERE 1=1";
         $params = [];
@@ -59,14 +111,22 @@ if ($query !== '' || $state !== '' || $type !== 'all') {
             $sql .= " AND state = ?";
             $params[] = $state;
         }
-        $sql .= " ORDER BY (CASE WHEN name LIKE ? THEN 1 ELSE 2 END), name ASC LIMIT {$limit}";
-        $params[] = $query !== '' ? "{$query}%" : '%';
+        if ($district !== '') {
+            $sql .= " AND district LIKE ?";
+            $params[] = "%{$district}%";
+        }
+        if ($query !== '') {
+            $sql .= " ORDER BY (CASE WHEN name LIKE ? THEN 1 ELSE 2 END), name ASC LIMIT {$limit}";
+            $params[] = "{$query}%";
+        } else {
+            $sql .= " ORDER BY name ASC LIMIT {$limit}";
+        }
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         $collegesList = $stmt->fetchAll();
     }
 
-    // 3. Standalone Institutes (AISHE Directory)
+    // 4. Standalone Institutes (AISHE Directory - 17,000+ Institutes)
     if (in_array($type, ['all', 'institutes', 'institutions'])) {
         $sql = "SELECT * FROM institute WHERE 1=1";
         $params = [];
@@ -78,14 +138,22 @@ if ($query !== '' || $state !== '' || $type !== 'all') {
             $sql .= " AND state = ?";
             $params[] = $state;
         }
-        $sql .= " ORDER BY (CASE WHEN name LIKE ? THEN 1 ELSE 2 END), name ASC LIMIT {$limit}";
-        $params[] = $query !== '' ? "{$query}%" : '%';
+        if ($district !== '') {
+            $sql .= " AND district LIKE ?";
+            $params[] = "%{$district}%";
+        }
+        if ($query !== '') {
+            $sql .= " ORDER BY (CASE WHEN name LIKE ? THEN 1 ELSE 2 END), name ASC LIMIT {$limit}";
+            $params[] = "{$query}%";
+        } else {
+            $sql .= " ORDER BY name ASC LIMIT {$limit}";
+        }
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         $institutesList = $stmt->fetchAll();
     }
 
-    // 4. Entrance Examinations
+    // 5. Entrance Examinations
     if (in_array($type, ['all', 'exams'])) {
         $sql = "SELECT * FROM examination WHERE 1=1";
         $params = [];
@@ -99,7 +167,7 @@ if ($query !== '' || $state !== '' || $type !== 'all') {
         $examinations = $stmt->fetchAll();
     }
 
-    // 5. Scholarships
+    // 6. Scholarships
     if (in_array($type, ['all', 'scholarships'])) {
         $sql = "SELECT * FROM scholarship WHERE is_active = 1";
         $params = [];
@@ -117,7 +185,7 @@ if ($query !== '' || $state !== '' || $type !== 'all') {
         $scholarships = $stmt->fetchAll();
     }
 
-    // 6. Learning Library & Textbooks
+    // 7. Learning Library & Textbooks
     if (in_array($type, ['all', 'learn'])) {
         $sql = "
             SELECT lr.*, b.code as board_code, s.name as subject_name 
@@ -137,7 +205,7 @@ if ($query !== '' || $state !== '' || $type !== 'all') {
         $resources = $stmt->fetchAll();
     }
 
-    // 7. Verified Tutors & Educators
+    // 8. Verified Tutors & Educators
     if (in_array($type, ['all', 'tutors'])) {
         $sql = "SELECT * FROM educator WHERE 1=1";
         $params = [];
@@ -149,17 +217,54 @@ if ($query !== '' || $state !== '' || $type !== 'all') {
             $sql .= " AND state = ?";
             $params[] = $state;
         }
+        if ($district !== '') {
+            $sql .= " AND (district LIKE ? OR city LIKE ?)";
+            $params[] = "%{$district}%";
+            $params[] = "%{$district}%";
+        }
         $sql .= " LIMIT {$limit}";
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         $educators = $stmt->fetchAll();
     }
+} else {
+    // Default discovery state: Show curated overview across premier institutions
+    try {
+        $universitiesList = $pdo->query("SELECT * FROM university WHERE status = 'ACTIVE' ORDER BY id ASC LIMIT 6")->fetchAll();
+    } catch (Exception $e) { $universitiesList = []; }
+
+    try {
+        $schoolsList = $pdo->query("SELECT * FROM `school` ORDER BY id ASC LIMIT 6")->fetchAll();
+    } catch (Exception $e) { $schoolsList = []; }
+
+    try {
+        $collegesList = $pdo->query("SELECT * FROM college WHERE status = 'ACTIVE' ORDER BY id ASC LIMIT 6")->fetchAll();
+    } catch (Exception $e) { $collegesList = []; }
+
+    try {
+        $institutesList = $pdo->query("SELECT * FROM institute ORDER BY id ASC LIMIT 6")->fetchAll();
+    } catch (Exception $e) { $institutesList = []; }
+
+    try {
+        $examinations = $pdo->query("SELECT * FROM examination ORDER BY is_featured DESC, id ASC LIMIT 6")->fetchAll();
+    } catch (Exception $e) { $examinations = []; }
+
+    try {
+        $scholarships = $pdo->query("SELECT * FROM scholarship WHERE is_active = 1 ORDER BY id ASC LIMIT 6")->fetchAll();
+    } catch (Exception $e) { $scholarships = []; }
 }
 
-$totalResults = count($resources) + count($educators) + count($universitiesList) + count($collegesList) + count($institutesList) + count($examinations) + count($scholarships);
+$totalResults = count($schoolsList) + count($resources) + count($educators) + count($universitiesList) + count($collegesList) + count($institutesList) + count($examinations) + count($scholarships);
 
-$pageTitle = 'Search: ' . ($query ?: ($state ? "State: {$state}" : 'National Higher Education Directory')) . ' — Online Education';
-$pageDesc = 'Search and compare universities, affiliated colleges, standalone institutes, entrance exams, and scholarships across all 36 States & UTs of India.';
+$locationTitle = '';
+if ($district && $state) {
+    $locationTitle = "{$district}, {$state}";
+} elseif ($state) {
+    $locationTitle = "State: {$state}";
+}
+
+$pageTitle = 'Search: ' . ($query ?: ($locationTitle ?: 'National Education Directory')) . ' — Online Education';
+$pageDesc = 'Search and compare CBSE schools, universities, affiliated colleges, standalone institutes, entrance exams, and scholarships across all 36 States & UTs of India.';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -168,23 +273,43 @@ require_once __DIR__ . '/includes/header.php';
     <form action="search.php" method="GET" style="display: flex; flex-direction: column; gap: 14px;">
         <input type="hidden" name="type" value="<?= htmlspecialchars($type) ?>">
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 260px; position: relative;">
+            <div style="flex: 1; min-width: 240px; position: relative;">
                 <input 
                     type="text" 
                     name="q" 
                     class="form-control" 
-                    placeholder="Search universities, colleges, polytechnics, AISHE codes, exams..." 
+                    placeholder="Search schools, universities, colleges, polytechnics, AISHE / Affiliation codes..." 
                     value="<?= htmlspecialchars($query) ?>"
                     style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; font-weight: 500;"
                     autofocus
                 >
             </div>
-            <div style="width: 220px; min-width: 180px;">
-                <select name="state" class="form-select" style="width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; background: #FFF;">
+            <div style="width: 200px; min-width: 160px;">
+                <select 
+                    name="state" 
+                    class="form-select state-select-input" 
+                    data-district-target="search-district-select"
+                    style="width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; background: #FFF;"
+                >
                     <option value="">All States & UTs (36)</option>
                     <?php foreach ($allStates as $st): ?>
                         <option value="<?= htmlspecialchars($st) ?>" <?= $state === $st ? 'selected' : '' ?>>
                             <?= htmlspecialchars($st) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div style="width: 190px; min-width: 150px;">
+                <select 
+                    name="district" 
+                    id="search-district-select" 
+                    class="form-select" 
+                    style="width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; background: #FFF;"
+                >
+                    <option value="">All Districts<?= !empty($allDistricts) ? ' (' . count($allDistricts) . ')' : '' ?></option>
+                    <?php foreach ($allDistricts as $dst): ?>
+                        <option value="<?= htmlspecialchars($dst) ?>" <?= $district === $dst ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($dst) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -194,7 +319,7 @@ require_once __DIR__ . '/includes/header.php';
                     🔍 Search
                 </button>
             </div>
-            <?php if ($query !== '' || $state !== '' || $type !== 'all'): ?>
+            <?php if ($isSearchApplied): ?>
                 <div>
                     <a href="search.php" class="btn btn-outline" style="padding: 12px 16px; font-size: 0.9rem;" title="Reset Search">
                         ✕ Clear
@@ -206,16 +331,18 @@ require_once __DIR__ . '/includes/header.php';
 
     <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-top: 1px solid #F1F5F9; padding-top: 14px;">
         <div style="font-size: 0.9rem; color: var(--slate-body);">
-            <?php if ($query !== '' || $state !== ''): ?>
-                Found <strong><?= $totalResults ?></strong> result<?= $totalResults === 1 ? '' : 's' ?> for 
-                <?php if ($query !== ''): ?><span style="color: var(--orange); font-weight: 700;">"<?= htmlspecialchars($query) ?>"</span><?php endif; ?>
+            <?php if ($query !== '' || $state !== '' || $district !== ''): ?>
+                Found <strong><?= $totalResults ?></strong> result<?= $totalResults === 1 ? '' : 's' ?>
+                <?php if ($query !== ''): ?> for <span style="color: var(--orange); font-weight: 700;">"<?= htmlspecialchars($query) ?>"</span><?php endif; ?>
                 <?php if ($state !== ''): ?> in <strong style="color: var(--charcoal);"><?= htmlspecialchars($state) ?></strong><?php endif; ?>
+                <?php if ($district !== ''): ?>, <strong><?= htmlspecialchars($district) ?></strong><?php endif; ?>
             <?php else: ?>
-                Showing results across India's premier educational institutions, exams, and scholarship registries.
+                Showing premier institutions across India's schools, colleges, universities, examinations, and scholarship registries.
             <?php endif; ?>
         </div>
         <div style="display: flex; gap: 6px; font-size: 0.78rem; color: var(--slate-muted); flex-wrap: wrap; align-items: center;">
             <span>Popular:</span>
+            <a href="search.php?q=Kendriya+Vidyalaya" style="color: var(--charcoal); text-decoration: underline;">Kendriya Vidyalaya</a> •
             <a href="search.php?q=Delhi+University" style="color: var(--charcoal); text-decoration: underline;">Delhi University</a> •
             <a href="search.php?q=IIT" style="color: var(--charcoal); text-decoration: underline;">IITs</a> •
             <a href="search.php?q=NEET" style="color: var(--charcoal); text-decoration: underline;">NEET</a> •
@@ -227,47 +354,51 @@ require_once __DIR__ . '/includes/header.php';
 
 <!-- Type Filter Tabs -->
 <div style="display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 6px; border-bottom: 1px solid var(--border-color);">
-    <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&type=all" class="btn <?= $type === 'all' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
+    <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&district=<?= urlencode($district) ?>&type=all" class="btn <?= $type === 'all' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
         All (<?= $totalResults ?>)
     </a>
-    <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&type=universities" class="btn <?= $type === 'universities' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
+    <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&district=<?= urlencode($district) ?>&type=schools" class="btn <?= $type === 'schools' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
+        🏫 CBSE Schools (<?= count($schoolsList) ?>)
+    </a>
+    <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&district=<?= urlencode($district) ?>&type=universities" class="btn <?= $type === 'universities' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
         🏛️ Universities (<?= count($universitiesList) ?>)
     </a>
-    <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&type=colleges" class="btn <?= $type === 'colleges' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
+    <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&district=<?= urlencode($district) ?>&type=colleges" class="btn <?= $type === 'colleges' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
         🎓 Colleges (<?= count($collegesList) ?>)
     </a>
-    <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&type=institutes" class="btn <?= $type === 'institutes' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
+    <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&district=<?= urlencode($district) ?>&type=institutes" class="btn <?= $type === 'institutes' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
         🏢 Standalone Institutes (<?= count($institutesList) ?>)
     </a>
-    <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&type=exams" class="btn <?= $type === 'exams' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
+    <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&district=<?= urlencode($district) ?>&type=exams" class="btn <?= $type === 'exams' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
         🎯 Entrance Exams (<?= count($examinations) ?>)
     </a>
-    <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&type=scholarships" class="btn <?= $type === 'scholarships' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
+    <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&district=<?= urlencode($district) ?>&type=scholarships" class="btn <?= $type === 'scholarships' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
         💰 Scholarships (<?= count($scholarships) ?>)
     </a>
     <?php if (!empty($resources) || $type === 'learn'): ?>
-        <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&type=learn" class="btn <?= $type === 'learn' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
+        <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&district=<?= urlencode($district) ?>&type=learn" class="btn <?= $type === 'learn' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
             📚 Library (<?= count($resources) ?>)
         </a>
     <?php endif; ?>
     <?php if (!empty($educators) || $type === 'tutors'): ?>
-        <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&type=tutors" class="btn <?= $type === 'tutors' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
+        <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&district=<?= urlencode($district) ?>&type=tutors" class="btn <?= $type === 'tutors' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
             👨‍🏫 Educators (<?= count($educators) ?>)
         </a>
     <?php endif; ?>
 </div>
 
-<?php if ($totalResults === 0): ?>
+<?php if ($isSearchApplied && $totalResults === 0): ?>
     <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 48px; text-align: center; margin-bottom: 36px;">
         <div style="font-size: 3rem; margin-bottom: 12px;">🔍</div>
         <h3 style="font-size: 1.3rem; font-weight: 700; color: var(--charcoal); margin-bottom: 8px;">No matching results found</h3>
         <p style="color: var(--slate-muted); font-size: 0.9rem; max-width: 520px; margin: 0 auto 24px;">
-            We couldn't find any match for your query. Try searching by institution name, city, district, exam code, or AISHE code.
+            We couldn't find any match for your query. Try searching by institution name, affiliation code, city, district, exam code, or AISHE code.
         </p>
         <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px;">
+            <a href="school.php" class="btn btn-outline" style="font-size: 0.85rem;">🏫 CBSE Schools (33K+)</a>
             <a href="search.php?q=University" class="btn btn-outline" style="font-size: 0.85rem;">🏛️ Explore Universities</a>
-            <a href="search.php?q=Medical" class="btn btn-outline" style="font-size: 0.85rem;">🩺 Medical Colleges</a>
-            <a href="search.php?q=Engineering" class="btn btn-outline" style="font-size: 0.85rem;">⚙️ Engineering Colleges</a>
+            <a href="college.php" class="btn btn-outline" style="font-size: 0.85rem;">🎓 Affiliated Colleges</a>
+            <a href="institute.php" class="btn btn-outline" style="font-size: 0.85rem;">🏢 Standalone Institutes</a>
             <a href="exam.php" class="btn btn-outline" style="font-size: 0.85rem;">🎯 All Exams</a>
             <a href="scholarship.php" class="btn btn-outline" style="font-size: 0.85rem;">💰 Scholarships</a>
         </div>
@@ -282,7 +413,7 @@ require_once __DIR__ . '/includes/header.php';
             <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--charcoal); margin: 0;">
                 🏛️ Universities (<?= count($universitiesList) ?>)
             </h3>
-            <a href="institution.php" style="font-size: 0.85rem; font-weight: 700; color: var(--orange);">View National Directory (1,505) →</a>
+            <a href="institution.php<?= $state ? '?state=' . urlencode($state) : '' ?>" style="font-size: 0.85rem; font-weight: 700; color: var(--orange);">View National Directory (1,505) →</a>
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
             <?php foreach ($universitiesList as $univ): ?>
@@ -330,14 +461,77 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 <?php endif; ?>
 
-<!-- 2. Colleges (AISHE Directory) -->
+<!-- 2. CBSE Schools (Official CBSE Registry - 33,180+ Schools) -->
+<?php if (!empty($schoolsList)): ?>
+    <div style="margin-bottom: 36px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--charcoal); margin: 0;">
+                🏫 CBSE Schools (<?= count($schoolsList) ?>)
+            </h3>
+            <a href="school.php<?= $state ? '?state=' . urlencode($state) : '' ?>" style="font-size: 0.85rem; font-weight: 700; color: var(--orange);">View CBSE Directory (33,183) →</a>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+            <?php foreach ($schoolsList as $schItem): ?>
+                <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm); transition: transform 0.2s ease;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <?php if (!empty($schItem['affiliation_no'])): ?>
+                                <span style="font-size: 0.72rem; font-weight: 800; background: #111827; color: #FFF; padding: 2px 7px; border-radius: 4px;">
+                                    Aff. No: <?= htmlspecialchars($schItem['affiliation_no']) ?>
+                                </span>
+                            <?php endif; ?>
+                            <?php if (!empty($schItem['school_code'])): ?>
+                                <span style="font-size: 0.72rem; color: #334155; background: #F1F5F9; border: 1px solid #CBD5E1; font-weight: 700; padding: 2px 6px; border-radius: 4px;">
+                                    Code: <?= htmlspecialchars($schItem['school_code']) ?>
+                                </span>
+                            <?php endif; ?>
+                            <?php if (!empty($schItem['status'])): ?>
+                                <span style="font-size: 0.72rem; color: var(--orange-dark); background: var(--orange-light); border: 1px solid var(--orange-border); font-weight: 700; padding: 2px 6px; border-radius: 4px;">
+                                    <?= htmlspecialchars($schItem['status']) ?>
+                                </span>
+                            <?php endif; ?>
+                        </div>
+                        <h4 style="font-size: 1rem; font-weight: 700; color: var(--charcoal); line-height: 1.35; margin-bottom: 6px;">
+                            <a href="school-detail.php?id=<?= (int)$schItem['id'] ?>" style="color: var(--charcoal); text-decoration: none;">
+                                <?= htmlspecialchars($schItem['name']) ?>
+                            </a>
+                        </h4>
+                        <div style="font-size: 0.82rem; color: var(--slate-muted); margin-bottom: 8px;">
+                            📍 <?= htmlspecialchars($schItem['district'] ?: 'District N/A') ?>, <?= htmlspecialchars($schItem['state']) ?>
+                        </div>
+                        <?php if (!empty($schItem['head_name'])): ?>
+                            <div style="font-size: 0.76rem; color: #475569; margin-bottom: 8px;">
+                                Principal / Head: <strong><?= htmlspecialchars($schItem['head_name']) ?></strong>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center; border-top: 1px solid #F3F4F6; padding-top: 12px;">
+                        <a href="school-detail.php?id=<?= (int)$schItem['id'] ?>" class="btn btn-primary" style="flex: 1; text-align: center; font-size: 0.82rem; padding: 7px 12px;">
+                            School Profile →
+                        </a>
+                        <?php if (!empty($schItem['website'])): 
+                            $sWeb = $schItem['website'];
+                            if (!preg_match("~^(?:f|ht)tps?://~i", $sWeb)) $sWeb = "http://" . $sWeb;
+                        ?>
+                            <a href="<?= htmlspecialchars($sWeb) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="font-size: 0.82rem; padding: 7px 12px;" title="Official School Website">
+                                🌐 Web
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+<?php endif; ?>
+
+<!-- 3. Affiliated Colleges (AISHE Directory) -->
 <?php if (!empty($collegesList)): ?>
     <div style="margin-bottom: 36px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
             <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--charcoal); margin: 0;">
                 🎓 Affiliated Colleges (<?= count($collegesList) ?>)
             </h3>
-            <a href="college.php" style="font-size: 0.85rem; font-weight: 700; color: var(--orange);">View All 54,351 Colleges →</a>
+            <a href="college.php<?= $state ? '?state=' . urlencode($state) : '' ?>" style="font-size: 0.85rem; font-weight: 700; color: var(--orange);">View All 54,351 Colleges →</a>
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
             <?php foreach ($collegesList as $colItem): ?>
@@ -386,14 +580,14 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 <?php endif; ?>
 
-<!-- 3. Standalone Institutes (AISHE Directory) -->
+<!-- 4. Standalone Institutes (AISHE Directory) -->
 <?php if (!empty($institutesList)): ?>
     <div style="margin-bottom: 36px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
             <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--charcoal); margin: 0;">
                 🏢 Standalone Institutes (<?= count($institutesList) ?>)
             </h3>
-            <a href="institute.php" style="font-size: 0.85rem; font-weight: 700; color: var(--orange);">View All 17,010 Institutes →</a>
+            <a href="institute.php<?= $state ? '?state=' . urlencode($state) : '' ?>" style="font-size: 0.85rem; font-weight: 700; color: var(--orange);">View All 17,010 Institutes →</a>
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
             <?php foreach ($institutesList as $insItem): ?>
@@ -435,7 +629,7 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 <?php endif; ?>
 
-<!-- 4. Entrance Examinations -->
+<!-- 5. Entrance Examinations -->
 <?php if (!empty($examinations)): ?>
     <div style="margin-bottom: 36px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
@@ -489,7 +683,7 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 <?php endif; ?>
 
-<!-- 5. Scholarships -->
+<!-- 6. Scholarships -->
 <?php if (!empty($scholarships)): ?>
     <div style="margin-bottom: 36px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
@@ -543,7 +737,7 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 <?php endif; ?>
 
-<!-- 6. Learning Resources & Library -->
+<!-- 7. Learning Resources & Library -->
 <?php if (!empty($resources)): ?>
     <div style="margin-bottom: 36px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
@@ -582,7 +776,7 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 <?php endif; ?>
 
-<!-- 7. Verified Educators -->
+<!-- 8. Verified Educators -->
 <?php if (!empty($educators)): ?>
     <div style="margin-bottom: 36px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
