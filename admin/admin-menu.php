@@ -66,7 +66,18 @@ if (isset($pdo)) {
             <span>School Education</span>
         </a>
 
+        <a href="../school.php" target="_blank" class="nav-link-custom">
+            <i class="fas fa-chalkboard-teacher" style="color: #F59E0B;"></i>
+            <span>CBSE Schools</span>
+            <span class="badge bg-secondary rounded-pill">33k</span>
+        </a>
+
         <div class="nav-section-title">Admissions & Leads</div>
+        <a href="students.php" class="nav-link-custom <?= $currentPage === 'students.php' ? 'active' : '' ?>">
+            <i class="fas fa-user-graduate text-warning"></i>
+            <span>Registered Students</span>
+        </a>
+
         <a href="enquiries.php" class="nav-link-custom <?= $currentPage === 'enquiries.php' ? 'active' : '' ?>">
             <i class="fas fa-envelope-open-text" style="color: #F43F5E;"></i>
             <span>Student Inquiries</span>

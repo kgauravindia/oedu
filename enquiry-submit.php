@@ -73,7 +73,7 @@ $senderType = in_array($_POST['sender_type'] ?? '', ['parent', 'student']) ? $_P
 
 // Target Type
 $rawTargetType = strtolower(trim($_POST['target_type'] ?? ''));
-if (in_array($rawTargetType, ['educator', 'institution', 'university', 'college', 'institute'])) {
+if (in_array($rawTargetType, ['educator', 'institution', 'university', 'college', 'institute', 'school'])) {
     $targetType = $rawTargetType;
 } elseif (!empty($_POST['institution_name']) || (!empty($_POST['source']) && str_contains($_POST['source'], 'university'))) {
     $targetType = 'university';

@@ -73,11 +73,12 @@
                 <div class="footer-col">
                     <h3>Online Education Network</h3>
                     <ul>
-                        <li><a href="institution.php">List Your University or College</a></li>
-                        <li><a href="global.php">NRI & Diaspora Admissions</a></li>
-                        <li><a href="government.php">NEP 2020 Initiatives</a></li>
+                        <li><a href="school.php">CBSE Schools Directory (33K+)</a></li>
+                        <li><a href="register.php">Student Free Registration</a></li>
+                        <li><a href="login.php">Student Portal &amp; OTP Login</a></li>
+                        <li><a href="global.php">NRI &amp; Diaspora Admissions</a></li>
+                        <li><a href="government.php">NEP 2020 &amp; MoE Portals</a></li>
                         <li><a href="#child-safety">Student Privacy Guarantee</a></li>
-                        <li><a href="index.php">One Platform for Every People</a></li>
                     </ul>
                 </div>
             </div>

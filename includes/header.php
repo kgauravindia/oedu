@@ -1,5 +1,8 @@
 <?php
 // includes/header.php - Modular Header for Online Education (.php only)
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 if (!isset($pageTitle)) {
     $pageTitle = 'National University & College Directory of India | Online Education — Higher Education Portal';
 }
@@ -48,14 +51,20 @@ if (!isset($pageDesc)) {
     <div class="top-utility-bar">
         <div class="utility-container">
             <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 0.72rem; background: rgba(255,107,0,0.18); border: 1px solid rgba(255,107,0,0.4); color: #FFA35B; padding: 2px 7px; border-radius: 4px; font-weight: 700;">🇮🇳 Higher Education</span>
-                <span style="font-family: var(--font-hindi); font-weight: 600; color: #E5E7EB;">विश्वविद्यालय एवं महाविद्यालय मंच — One Education Platform for Every People</span>
+                <span style="font-size: 0.72rem; background: rgba(255,107,0,0.18); border: 1px solid rgba(255,107,0,0.4); color: #FFA35B; padding: 2px 7px; border-radius: 4px; font-weight: 700;">🇮🇳 Higher &amp; School Education</span>
+                <span style="font-family: var(--font-hindi); font-weight: 600; color: #E5E7EB;">विश्वविद्यालय, महाविद्यालय एवं विद्यालय मंच — One Education Platform for Every People</span>
             </div>
             <div class="utility-links">
-                <a href="government.php">🏛️ UGC & MoE Portals</a>
+                <a href="school.php">🏫 CBSE Schools (33K+)</a>
+                <a href="government.php">🏛️ UGC &amp; MoE Portals</a>
                 <a href="global.php">🌏 NRI Admissions</a>
-                <a href="https://www.facebook.com/oeduin" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:4px;"><svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> Facebook</a>
-                <a href="#child-safety">🛡️ Trust & Safety</a>
+                <?php if (isset($_SESSION['student_user_id'])): ?>
+                    <a href="student-dashboard.php" style="color: #FFA35B; font-weight: 700;">👤 <?= htmlspecialchars(explode(' ', $_SESSION['student_name'])[0]) ?>'s Dashboard</a>
+                    <a href="logout.php" style="color: #EF4444; font-weight: 700;">Sign Out</a>
+                <?php else: ?>
+                    <a href="login.php" style="color: #FFA35B; font-weight: 700;">📱 Student Sign In</a>
+                    <a href="register.php" style="color: #60A5FA; font-weight: 700;">Register</a>
+                <?php endif; ?>
                 <span style="color: #4B5563;">|</span>
                 <span id="lang-en-btn" style="cursor: pointer; font-weight: 700; color: #FFFFFF;">EN</span>
                 <span style="color: #4B5563;">/</span>
@@ -75,6 +84,9 @@ if (!isset($pageDesc)) {
 
                 <!-- Quick Action Links -->
                 <div class="header-actions">
+                    <a href="school.php" class="btn btn-outline" style="font-size: 0.8rem;">
+                        🏫 Schools (33K+)
+                    </a>
                     <a href="institution.php" class="btn btn-outline" style="font-size: 0.8rem;">
                         🏛️ Universities (1,505)
                     </a>
@@ -84,6 +96,15 @@ if (!isset($pageDesc)) {
                     <a href="institute.php" class="btn btn-outline" style="font-size: 0.8rem;">
                         🏢 Institutes (17K+)
                     </a>
+                    <?php if (isset($_SESSION['student_user_id'])): ?>
+                        <a href="student-dashboard.php" class="btn btn-outline" style="font-size: 0.8rem; border-color: var(--orange); color: var(--orange);">
+                            👤 Account
+                        </a>
+                    <?php else: ?>
+                        <a href="login.php" class="btn btn-outline" style="font-size: 0.8rem; border-color: var(--orange); color: var(--orange);">
+                            📱 Login / OTP
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -93,7 +114,7 @@ if (!isset($pageDesc)) {
                     type="text" 
                     name="q" 
                     class="header-search-input" 
-                    placeholder="Search universities, colleges, polytechnics, AISHE codes (DU, IIT, C-59634, S-1802)..." 
+                    placeholder="Search schools, universities, colleges, polytechnics, AISHE / Affiliation codes..." 
                     value="<?= htmlspecialchars($_GET['q'] ?? '') ?>"
                     autocomplete="off"
                     required
@@ -107,11 +128,14 @@ if (!isset($pageDesc)) {
             </form>
         </div>
 
-        <!-- Selected Sector Navigation Ribbon: Universities & Colleges -->
+        <!-- Selected Sector Navigation Ribbon: Universities & Colleges & Schools -->
         <nav class="nav-ribbon" aria-label="Sector Navigation">
             <div class="ribbon-container">
                 <a href="index.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'index.php' && !isset($_GET['sub']) ? 'active' : '' ?>">
                     🏠 Home
+                </a>
+                <a href="school.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'school.php' || basename($_SERVER['PHP_SELF']) == 'school-detail.php' ? 'active' : '' ?>">
+                    🏫 CBSE Schools <span class="ribbon-badge">33,183 Directory</span>
                 </a>
                 <a href="institution.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'institution.php' ? 'active' : '' ?>">
                     🏛️ Universities <span class="ribbon-badge">1,505 Directory</span>
