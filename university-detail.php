@@ -168,8 +168,11 @@ require_once __DIR__ . '/includes/header.php';
         <h3 style="font-size: 1.2rem; font-weight: 800; color: #111827; margin: 6px 0 12px;">
             Enquire for Admissions & Courses
         </h3>
-        <p style="font-size: 0.82rem; color: #6B7280; margin-bottom: 16px;">
-            Submit your inquiry regarding admissions, eligibility, cutoff ranks, or campus visits for <strong><?= htmlspecialchars($univ['name']) ?></strong>.
+        <p style="font-size: 0.82rem; color: #6B7280; margin-bottom: 6px;">
+            Submit your inquiry for notification and information.
+        </p>
+        <p style="font-size: 0.78rem; color: #9CA3AF; margin-bottom: 16px;">
+            Details visit the official website or campus.
         </p>
 
         <form action="enquiry-submit.php" method="POST" class="oedu-enquiry-form" style="display: flex; flex-direction: column; gap: 12px;">
