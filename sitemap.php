@@ -29,7 +29,8 @@ function generateSitemapXmlContent(string $section, string $siteUrl, PDO $pdo): 
             'colleges-1' => 'sitemap-colleges-1.xml',
             'colleges-2' => 'sitemap-colleges-2.xml',
             'colleges-3' => 'sitemap-colleges-3.xml',
-            'institutes' => 'sitemap-institutes.xml'
+            'institutes' => 'sitemap-institutes.xml',
+            'schools' => 'sitemap-schools.xml'
         ];
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
@@ -53,11 +54,16 @@ function generateSitemapXmlContent(string $section, string $siteUrl, PDO $pdo): 
             ['loc' => '/institution.php', 'priority' => '0.9', 'freq' => 'daily'],
             ['loc' => '/college.php', 'priority' => '0.9', 'freq' => 'daily'],
             ['loc' => '/institute.php', 'priority' => '0.9', 'freq' => 'daily'],
+            ['loc' => '/school.php', 'priority' => '0.9', 'freq' => 'daily'],
             ['loc' => '/search.php', 'priority' => '0.8', 'freq' => 'weekly'],
             ['loc' => '/exam.php', 'priority' => '0.8', 'freq' => 'weekly'],
             ['loc' => '/scholarship.php', 'priority' => '0.8', 'freq' => 'weekly'],
             ['loc' => '/government.php', 'priority' => '0.7', 'freq' => 'monthly'],
             ['loc' => '/global.php', 'priority' => '0.7', 'freq' => 'monthly'],
+            ['loc' => '/learn.php', 'priority' => '0.7', 'freq' => 'weekly'],
+            ['loc' => '/tutor.php', 'priority' => '0.7', 'freq' => 'weekly'],
+            ['loc' => '/register.php', 'priority' => '0.6', 'freq' => 'monthly'],
+            ['loc' => '/login.php', 'priority' => '0.6', 'freq' => 'monthly'],
         ];
 
         foreach ($mainPages as $p) {
@@ -121,6 +127,17 @@ function generateSitemapXmlContent(string $section, string $siteUrl, PDO $pdo): 
             $lastmod = !empty($row['updated_at']) ? substr($row['updated_at'], 0, 10) : $today;
             $xml .= "    <url>\n";
             $xml .= "        <loc>" . htmlspecialchars("{$siteUrl}/institute/" . urlencode($row['slug'])) . "</loc>\n";
+            $xml .= "        <lastmod>{$lastmod}</lastmod>\n";
+            $xml .= "        <changefreq>monthly</changefreq>\n";
+            $xml .= "        <priority>0.8</priority>\n";
+            $xml .= "    </url>\n";
+        }
+    } elseif ($section === 'schools') {
+        $stmt = $pdo->query("SELECT id, updated_at FROM `school` ORDER BY id ASC");
+        while ($row = $stmt->fetch()) {
+            $lastmod = !empty($row['updated_at']) ? substr($row['updated_at'], 0, 10) : $today;
+            $xml .= "    <url>\n";
+            $xml .= "        <loc>" . htmlspecialchars("{$siteUrl}/school-detail.php?id=" . (int)$row['id']) . "</loc>\n";
             $xml .= "        <lastmod>{$lastmod}</lastmod>\n";
             $xml .= "        <changefreq>monthly</changefreq>\n";
             $xml .= "        <priority>0.8</priority>\n";

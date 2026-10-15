@@ -13,17 +13,19 @@ $baseUrl = 'https://oedu.in';
 $uniCount = (int)$pdo->query("SELECT COUNT(*) FROM university WHERE slug IS NOT NULL AND slug != ''")->fetchColumn();
 $collegeCount = (int)$pdo->query("SELECT COUNT(*) FROM college WHERE slug IS NOT NULL AND slug != ''")->fetchColumn();
 $instituteCount = (int)$pdo->query("SELECT COUNT(*) FROM institute WHERE slug IS NOT NULL AND slug != ''")->fetchColumn();
-$totalUrls = $uniCount + $collegeCount + $instituteCount + 9; // 9 core pages
+$schoolCount = (int)$pdo->query("SELECT COUNT(*) FROM `school`")->fetchColumn();
+$totalUrls = $uniCount + $collegeCount + $instituteCount + $schoolCount + 14; // 14 core portal pages
 
 // File definitions
 $sitemapFiles = [
-    'sitemap.xml' => ['title' => 'Master Sitemap Index', 'type' => 'index', 'urls' => 6],
-    'sitemap-main.xml' => ['title' => 'Core Portal Pages', 'type' => 'main', 'urls' => 9],
+    'sitemap.xml' => ['title' => 'Master Sitemap Index', 'type' => 'index', 'urls' => 7],
+    'sitemap-main.xml' => ['title' => 'Core Portal Pages', 'type' => 'main', 'urls' => 14],
     'sitemap-universities.xml' => ['title' => 'All Universities (/university/)', 'type' => 'universities', 'urls' => $uniCount],
     'sitemap-colleges-1.xml' => ['title' => 'Colleges Part 1 (1–25,000)', 'type' => 'colleges-1', 'urls' => min(25000, $collegeCount)],
     'sitemap-colleges-2.xml' => ['title' => 'Colleges Part 2 (25,001–50,000)', 'type' => 'colleges-2', 'urls' => max(0, min(25000, $collegeCount - 25000))],
     'sitemap-colleges-3.xml' => ['title' => 'Colleges Part 3 (50,001+)', 'type' => 'colleges-3', 'urls' => max(0, $collegeCount - 50000)],
-    'sitemap-institutes.xml' => ['title' => 'Standalone Institutes (/institute/)', 'type' => 'institutes', 'urls' => $instituteCount]
+    'sitemap-institutes.xml' => ['title' => 'Standalone Institutes (/institute/)', 'type' => 'institutes', 'urls' => $instituteCount],
+    'sitemap-schools.xml' => ['title' => 'CBSE Schools (/school-detail.php?id=)', 'type' => 'schools', 'urls' => $schoolCount]
 ];
 
 define('SITEMAP_INTERNAL_CALL', true);
@@ -173,6 +175,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         </div>
                         <div class="stat-icon" style="background: #F0FDF4; color: #10B981;">
                             <i class="fas fa-building-columns"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-sm-6">
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-title">CBSE Schools in Sitemap</div>
+                            <div class="stat-value"><?= number_format($schoolCount) ?></div>
+                            <span class="stat-badge" style="background: #FAF5FF; color: #7E22CE;">
+                                /school-detail.php?id=
+                            </span>
+                        </div>
+                        <div class="stat-icon" style="background: #FAF5FF; color: #9333EA;">
+                            <i class="fas fa-school"></i>
                         </div>
                     </div>
                 </div>
