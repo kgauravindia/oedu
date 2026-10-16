@@ -492,7 +492,7 @@ require_once __DIR__ . '/includes/header.php';
                             <?php endif; ?>
                         </div>
                         <h4 style="font-size: 1rem; font-weight: 700; color: var(--charcoal); line-height: 1.35; margin-bottom: 6px;">
-                            <a href="school-detail.php?id=<?= (int)$schItem['id'] ?>" style="color: var(--charcoal); text-decoration: none;">
+                            <a href="school/<?= urlencode($schItem['slug']) ?>" style="color: var(--charcoal); text-decoration: none;">
                                 <?= htmlspecialchars($schItem['name']) ?>
                             </a>
                         </h4>
@@ -506,7 +506,7 @@ require_once __DIR__ . '/includes/header.php';
                         <?php endif; ?>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center; border-top: 1px solid #F3F4F6; padding-top: 12px;">
-                        <a href="school-detail.php?id=<?= (int)$schItem['id'] ?>" class="btn btn-primary" style="flex: 1; text-align: center; font-size: 0.82rem; padding: 7px 12px;">
+                        <a href="school/<?= urlencode($schItem['slug']) ?>" class="btn btn-primary" style="flex: 1; text-align: center; font-size: 0.82rem; padding: 7px 12px;">
                             School Profile →
                         </a>
                         <?php if (!empty($schItem['website'])): 

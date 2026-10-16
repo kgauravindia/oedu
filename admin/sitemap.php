@@ -25,7 +25,7 @@ $sitemapFiles = [
     'sitemap-colleges-2.xml' => ['title' => 'Colleges Part 2 (25,001–50,000)', 'type' => 'colleges-2', 'urls' => max(0, min(25000, $collegeCount - 25000))],
     'sitemap-colleges-3.xml' => ['title' => 'Colleges Part 3 (50,001+)', 'type' => 'colleges-3', 'urls' => max(0, $collegeCount - 50000)],
     'sitemap-institutes.xml' => ['title' => 'Standalone Institutes (/institute/)', 'type' => 'institutes', 'urls' => $instituteCount],
-    'sitemap-schools.xml' => ['title' => 'CBSE Schools (/school-detail.php?id=)', 'type' => 'schools', 'urls' => $schoolCount]
+    'sitemap-schools.xml' => ['title' => 'CBSE Schools (/school/cbse-school-name)', 'type' => 'schools', 'urls' => $schoolCount]
 ];
 
 define('SITEMAP_INTERNAL_CALL', true);
@@ -185,7 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                             <div class="stat-title">CBSE Schools in Sitemap</div>
                             <div class="stat-value"><?= number_format($schoolCount) ?></div>
                             <span class="stat-badge" style="background: #FAF5FF; color: #7E22CE;">
-                                /school-detail.php?id=
+                                /school/cbse-...
                             </span>
                         </div>
                         <div class="stat-icon" style="background: #FAF5FF; color: #9333EA;">

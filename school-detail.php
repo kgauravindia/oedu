@@ -2,27 +2,44 @@
 // school-detail.php — Dedicated Profile for CBSE School (.php only)
 require_once __DIR__ . '/includes/db.php';
 
+$slug = trim($_GET['slug'] ?? '');
 $id = (int)($_GET['id'] ?? 0);
 $affNo = trim($_GET['aff'] ?? '');
 $schCode = trim($_GET['code'] ?? '');
 
-if (!$id && !$affNo && !$schCode) {
+if (!$slug && !$id && !$affNo && !$schCode) {
     header("Location: school.php");
     exit;
 }
 
-if ($id > 0) {
+if ($slug) {
+    $stmt = $pdo->prepare("SELECT * FROM `school` WHERE slug = :slug LIMIT 1");
+    $stmt->execute([':slug' => $slug]);
+    $school = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Fallback: If searched without 'cbse-' prefix, retry with 'cbse-'
+    if (!$school && !str_starts_with($slug, 'cbse-')) {
+        $stmt = $pdo->prepare("SELECT * FROM `school` WHERE slug = :slug LIMIT 1");
+        $stmt->execute([':slug' => 'cbse-' . $slug]);
+        $school = $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+} elseif ($id > 0) {
     $stmt = $pdo->prepare("SELECT * FROM `school` WHERE id = :id LIMIT 1");
     $stmt->execute([':id' => $id]);
+    $school = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($school && !empty($school['slug'])) {
+        header("Location: school/" . urlencode($school['slug']), true, 301);
+        exit;
+    }
 } elseif ($affNo) {
     $stmt = $pdo->prepare("SELECT * FROM `school` WHERE affiliation_no = :aff LIMIT 1");
     $stmt->execute([':aff' => $affNo]);
+    $school = $stmt->fetch(PDO::FETCH_ASSOC);
 } else {
     $stmt = $pdo->prepare("SELECT * FROM `school` WHERE school_code = :code LIMIT 1");
     $stmt->execute([':code' => $schCode]);
+    $school = $stmt->fetch(PDO::FETCH_ASSOC);
 }
-
-$school = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$school) {
     $pageTitle = 'CBSE School Not Found | Online Education';
@@ -39,7 +56,7 @@ if (!$school) {
 
 // Fetch nearby / other schools in same district
 $nearbyStmt = $pdo->prepare("
-    SELECT id, name, affiliation_no, school_code, status, district, state 
+    SELECT id, name, affiliation_no, school_code, status, district, state, slug 
     FROM `school` 
     WHERE state = :state AND district = :district AND id != :id 
     ORDER BY name ASC 
@@ -202,7 +219,7 @@ require_once __DIR__ . '/includes/header.php';
                                     Aff. No: <?= htmlspecialchars($ns['affiliation_no']) ?> • <?= htmlspecialchars($ns['status'] ?: 'CBSE') ?>
                                 </span>
                             </div>
-                            <a href="school-detail.php?id=<?= (int)$ns['id'] ?>" class="btn btn-outline" style="font-size: 0.76rem; padding: 4px 10px; white-space: nowrap;">
+                            <a href="school/<?= urlencode($ns['slug']) ?>" class="btn btn-outline" style="font-size: 0.76rem; padding: 4px 10px; white-space: nowrap;">
                                 View →
                             </a>
                         </div>
@@ -229,7 +246,7 @@ require_once __DIR__ . '/includes/header.php';
                 <input type="hidden" name="target_type" value="school">
                 <input type="hidden" name="target_id" value="<?= (int)$school['id'] ?>">
                 <input type="hidden" name="institution_name" value="<?= htmlspecialchars($school['name']) ?>">
-                <input type="hidden" name="redirect_url" value="school-detail.php?id=<?= (int)$school['id'] ?>">
+                <input type="hidden" name="redirect_url" value="school/<?= urlencode($school['slug']) ?>">
 
                 <div>
                     <label style="font-size: 0.76rem; font-weight: 700; display: block; margin-bottom: 4px;">Parent / Student Name *</label>

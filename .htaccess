@@ -16,6 +16,9 @@
     # Clean URL for Institute: /institute/institute-name
     RewriteRule ^institute/([^/]+)/?$ institute-detail.php?slug=$1 [L,QSA]
 
+    # Clean URL for School: /school/cbse-school-name
+    RewriteRule ^school/([^/]+)/?$ school-detail.php?slug=$1 [L,QSA]
+
     # XML Sitemap routes
     RewriteRule ^sitemap\.xml$ sitemap.php [L,QSA]
     RewriteRule ^sitemap-([a-z0-9\-]+)\.xml$ sitemap.php?section=$1 [L,QSA]

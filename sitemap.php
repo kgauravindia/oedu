@@ -133,11 +133,11 @@ function generateSitemapXmlContent(string $section, string $siteUrl, PDO $pdo): 
             $xml .= "    </url>\n";
         }
     } elseif ($section === 'schools') {
-        $stmt = $pdo->query("SELECT id, updated_at FROM `school` ORDER BY id ASC");
+        $stmt = $pdo->query("SELECT slug, updated_at FROM `school` WHERE slug IS NOT NULL AND slug != '' ORDER BY id ASC");
         while ($row = $stmt->fetch()) {
             $lastmod = !empty($row['updated_at']) ? substr($row['updated_at'], 0, 10) : $today;
             $xml .= "    <url>\n";
-            $xml .= "        <loc>" . htmlspecialchars("{$siteUrl}/school-detail.php?id=" . (int)$row['id']) . "</loc>\n";
+            $xml .= "        <loc>" . htmlspecialchars("{$siteUrl}/school/" . urlencode($row['slug'])) . "</loc>\n";
             $xml .= "        <lastmod>{$lastmod}</lastmod>\n";
             $xml .= "        <changefreq>monthly</changefreq>\n";
             $xml .= "        <priority>0.8</priority>\n";

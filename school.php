@@ -180,7 +180,7 @@ require_once __DIR__ . '/includes/header.php';
                         </div>
                         <div style="flex: 1; min-width: 0;">
                             <h3 style="font-size: 1.02rem; font-weight: 800; color: #111827; line-height: 1.3; margin-bottom: 2px;">
-                                <a href="school-detail.php?id=<?= (int)$s['id'] ?>"><?= htmlspecialchars($s['name']) ?></a>
+                                <a href="school/<?= urlencode($s['slug']) ?>"><?= htmlspecialchars($s['name']) ?></a>
                             </h3>
                             <div style="font-size: 0.8rem; color: #6B7280;">
                                 📍 <?= htmlspecialchars($s['district']) ?>, <strong><?= htmlspecialchars($s['state']) ?></strong>
@@ -237,10 +237,10 @@ require_once __DIR__ . '/includes/header.php';
                         <?php endif; ?>
                     </div>
                     <div style="display: flex; gap: 6px;">
-                        <a href="school-detail.php?id=<?= (int)$s['id'] ?>" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.78rem; border-color: #111827; color: #111827;">
+                        <a href="school/<?= urlencode($s['slug']) ?>" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.78rem; border-color: #111827; color: #111827;">
                             Details →
                         </a>
-                        <a href="school-detail.php?id=<?= (int)$s['id'] ?>#enquire" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.78rem;">
+                        <a href="school/<?= urlencode($s['slug']) ?>#enquire" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.78rem;">
                             Enquire
                         </a>
                     </div>
