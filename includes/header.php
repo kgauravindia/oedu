@@ -56,6 +56,7 @@ if (!isset($pageDesc)) {
             </div>
             <div class="utility-links">
                 <a href="school.php">🏫 CBSE Schools (33K+)</a>
+                <a href="syllabus.php">📖 Syllabus</a>
                 <a href="government.php">🏛️ UGC &amp; MoE Portals</a>
                 <a href="global.php">🌏 NRI Admissions</a>
                 <?php if (isset($_SESSION['student_user_id'])): ?>
@@ -135,7 +136,7 @@ if (!isset($pageDesc)) {
                     🏠 Home
                 </a>
                 <a href="school.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'school.php' || basename($_SERVER['PHP_SELF']) == 'school-detail.php' ? 'active' : '' ?>">
-                    🏫 CBSE Schools <span class="ribbon-badge">33,183 Directory</span>
+                    🏫 CBSE Schools <span class="ribbon-badge">33,233 Directory</span>
                 </a>
                 <a href="institution.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'institution.php' ? 'active' : '' ?>">
                     🏛️ Universities <span class="ribbon-badge">1,505 Directory</span>
@@ -145,6 +146,9 @@ if (!isset($pageDesc)) {
                 </a>
                 <a href="institute.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'institute.php' ? 'active' : '' ?>">
                     🏢 Standalone Institutes <span class="ribbon-badge">17,010 Directory</span>
+                </a>
+                <a href="syllabus.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'syllabus.php' ? 'active' : '' ?>">
+                    📖 Syllabus <span class="ribbon-badge">CBSE • CUET • JEE</span>
                 </a>
                 <a href="exam.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'exam.php' ? 'active' : '' ?>">
                     🎯 Entrance Cutoffs <span class="ribbon-badge">CUET • JEE • NEET</span>

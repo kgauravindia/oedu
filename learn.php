@@ -102,6 +102,7 @@ require_once __DIR__ . '/includes/header.php';
             <select name="type" style="width: 100%; padding: 8px 12px; border: 1px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.88rem;">
                 <option value="">All Types</option>
                 <option value="ncert_book" <?= $selectedType == 'ncert_book' ? 'selected' : '' ?>>Official Textbook</option>
+                <option value="syllabus" <?= $selectedType == 'syllabus' ? 'selected' : '' ?>>Official Syllabus &amp; Curriculum</option>
                 <option value="notes" <?= $selectedType == 'notes' ? 'selected' : '' ?>>Revision Notes</option>
                 <option value="solution" <?= $selectedType == 'solution' ? 'selected' : '' ?>>Chapter Solutions</option>
                 <option value="mcq_quiz" <?= $selectedType == 'mcq_quiz' ? 'selected' : '' ?>>MCQ Practice</option>

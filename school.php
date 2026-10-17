@@ -44,7 +44,7 @@ if ($selectedStatus) {
 }
 
 if ($search) {
-    $where[] = "(name LIKE :q OR affiliation_no LIKE :q OR school_code LIKE :q OR district LIKE :q OR head_name LIKE :q)";
+    $where[] = "(name LIKE :q OR affiliation_no LIKE :q OR school_code LIKE :q OR udise_code LIKE :q OR district LIKE :q OR head_name LIKE :q)";
     $params[':q'] = "%{$search}%";
 }
 
@@ -198,6 +198,11 @@ require_once __DIR__ . '/includes/header.php';
                         <?php if (!empty($s['school_code'])): ?>
                             <span style="font-size: 0.72rem; font-weight: 700; background: #F1F5F9; color: #334155; padding: 2px 7px; border-radius: 4px; border: 1px solid #CBD5E1;">
                                 Code: <?= htmlspecialchars($s['school_code']) ?>
+                            </span>
+                        <?php endif; ?>
+                        <?php if (!empty($s['udise_code'])): ?>
+                            <span style="font-size: 0.72rem; font-weight: 700; background: #EFF6FF; color: #1D4ED8; padding: 2px 7px; border-radius: 4px; border: 1px solid #BFDBFE;">
+                                UDISE: <?= htmlspecialchars($s['udise_code']) ?>
                             </span>
                         <?php endif; ?>
                         <?php if (!empty($s['status'])): ?>

@@ -19,6 +19,17 @@
     # Clean URL for School: /school/cbse-school-name
     RewriteRule ^school/([^/]+)/?$ school-detail.php?slug=$1 [L,QSA]
 
+    # Clean URL for Syllabus: /syllabus
+    RewriteRule ^syllabus/?$ syllabus.php [L,QSA]
+
+    # Clean URL for Contact: /contact
+    RewriteRule ^contact/?$ contact.php [L,QSA]
+
+    # Clean URL for other top-level pages without .php
+    RewriteCond %{DOCUMENT_ROOT}/$1.php -f [OR]
+    RewriteCond %{REQUEST_FILENAME}.php -f
+    RewriteRule ^([a-zA-Z0-9_-]+)/?$ $1.php [L,QSA]
+
     # XML Sitemap routes
     RewriteRule ^sitemap\.xml$ sitemap.php [L,QSA]
     RewriteRule ^sitemap-([a-z0-9\-]+)\.xml$ sitemap.php?section=$1 [L,QSA]

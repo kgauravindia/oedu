@@ -56,6 +56,7 @@ function generateSitemapXmlContent(string $section, string $siteUrl, PDO $pdo): 
             ['loc' => '/institute.php', 'priority' => '0.9', 'freq' => 'daily'],
             ['loc' => '/school.php', 'priority' => '0.9', 'freq' => 'daily'],
             ['loc' => '/search.php', 'priority' => '0.8', 'freq' => 'weekly'],
+            ['loc' => '/syllabus.php', 'priority' => '0.8', 'freq' => 'weekly'],
             ['loc' => '/exam.php', 'priority' => '0.8', 'freq' => 'weekly'],
             ['loc' => '/scholarship.php', 'priority' => '0.8', 'freq' => 'weekly'],
             ['loc' => '/government.php', 'priority' => '0.7', 'freq' => 'monthly'],
@@ -64,6 +65,13 @@ function generateSitemapXmlContent(string $section, string $siteUrl, PDO $pdo): 
             ['loc' => '/tutor.php', 'priority' => '0.7', 'freq' => 'weekly'],
             ['loc' => '/register.php', 'priority' => '0.6', 'freq' => 'monthly'],
             ['loc' => '/login.php', 'priority' => '0.6', 'freq' => 'monthly'],
+            ['loc' => '/contact.php', 'priority' => '0.8', 'freq' => 'monthly'],
+            ['loc' => '/about.php', 'priority' => '0.8', 'freq' => 'monthly'],
+            ['loc' => '/mission.php', 'priority' => '0.7', 'freq' => 'monthly'],
+            ['loc' => '/vision.php', 'priority' => '0.7', 'freq' => 'monthly'],
+            ['loc' => '/terms.php', 'priority' => '0.5', 'freq' => 'monthly'],
+            ['loc' => '/disclaimer.php', 'priority' => '0.5', 'freq' => 'monthly'],
+            ['loc' => '/privacy.php', 'priority' => '0.5', 'freq' => 'monthly'],
         ];
 
         foreach ($mainPages as $p) {

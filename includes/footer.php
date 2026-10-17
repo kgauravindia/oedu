@@ -61,6 +61,7 @@
                 <div class="footer-col">
                     <h3>Admissions & Cutoffs</h3>
                     <ul>
+                        <li><a href="syllabus.php">National Syllabus &amp; Curriculum (CBSE • CUET)</a></li>
                         <li><a href="exam.php?category=University+Admission">CUET-UG University Calendar</a></li>
                         <li><a href="exam.php?category=Engineering+Entrance">JEE Main & Advanced</a></li>
                         <li><a href="exam.php?category=Medical+Entrance">NEET-UG Medical Admission</a></li>
@@ -73,12 +74,16 @@
                 <div class="footer-col">
                     <h3>Online Education Network</h3>
                     <ul>
+                        <li><a href="about.php">About Online Education</a></li>
+                        <li><a href="mission.php">Our Mission &amp; Purpose</a></li>
+                        <li><a href="vision.php">Our Vision 2030</a></li>
+                        <li><a href="contact.php">Contact &amp; Verification Desk</a></li>
                         <li><a href="school.php">CBSE Schools Directory (33K+)</a></li>
+                        <li><a href="syllabus.php">Official Syllabus Directory</a></li>
                         <li><a href="register.php">Student Free Registration</a></li>
                         <li><a href="login.php">Student Portal &amp; OTP Login</a></li>
                         <li><a href="global.php">NRI &amp; Diaspora Admissions</a></li>
                         <li><a href="government.php">NEP 2020 &amp; MoE Portals</a></li>
-                        <li><a href="#child-safety">Student Privacy Guarantee</a></li>
                     </ul>
                 </div>
             </div>
@@ -88,11 +93,16 @@
                     © <?= date('Y') ?> <strong style="color:#FFFFFF;">Online Education</strong> — A public project by <a href="https://offerplant.com" target="_blank" rel="noopener noreferrer" style="color: var(--orange); font-weight: 700; text-decoration: none;">OfferPlant</a>. All rights reserved.
                 </div>
                 <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
+                    <a href="about.php">About Us</a>
+                    <a href="mission.php">Mission</a>
+                    <a href="vision.php">Vision</a>
+                    <a href="contact.php">Contact</a>
+                    <a href="terms.php">Terms of Service</a>
+                    <a href="disclaimer.php">Disclaimer</a>
+                    <a href="privacy.php">Privacy Policy</a>
                     <a href="https://www.facebook.com/oeduin" target="_blank" rel="noopener noreferrer">Facebook</a>
                     <a href="government.php">UGC Guidelines</a>
-                    <a href="#child-safety">Trust & Safety</a>
-                    <a href="index.php">Terms of Service</a>
-                    <a href="index.php">Privacy Policy</a>
+                    <a href="#child-safety">Trust &amp; Safety</a>
                 </div>
             </div>
         </div>

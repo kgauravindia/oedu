@@ -77,8 +77,8 @@ if ($isSearchApplied) {
         $sql = "SELECT * FROM `school` WHERE 1=1";
         $params = [];
         if ($query !== '') {
-            $sql .= " AND (name LIKE ? OR affiliation_no LIKE ? OR school_code LIKE ? OR district LIKE ? OR state LIKE ? OR head_name LIKE ?)";
-            $params = array_merge($params, [$searchWildcard, $searchWildcard, $searchWildcard, $searchWildcard, $searchWildcard, $searchWildcard]);
+            $sql .= " AND (name LIKE ? OR affiliation_no LIKE ? OR school_code LIKE ? OR udise_code LIKE ? OR district LIKE ? OR state LIKE ? OR head_name LIKE ?)";
+            $params = array_merge($params, [$searchWildcard, $searchWildcard, $searchWildcard, $searchWildcard, $searchWildcard, $searchWildcard, $searchWildcard]);
         }
         if ($state !== '') {
             $sql .= " AND state = ?";
@@ -372,6 +372,9 @@ require_once __DIR__ . '/includes/header.php';
     <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&district=<?= urlencode($district) ?>&type=exams" class="btn <?= $type === 'exams' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
         🎯 Entrance Exams (<?= count($examinations) ?>)
     </a>
+    <a href="syllabus.php<?= $query !== '' ? '?q=' . urlencode($query) : '' ?>" class="btn btn-outline" style="font-size: 0.82rem; white-space: nowrap;">
+        📖 Syllabus Directory
+    </a>
     <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&district=<?= urlencode($district) ?>&type=scholarships" class="btn <?= $type === 'scholarships' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
         💰 Scholarships (<?= count($scholarships) ?>)
     </a>
@@ -483,6 +486,11 @@ require_once __DIR__ . '/includes/header.php';
                             <?php if (!empty($schItem['school_code'])): ?>
                                 <span style="font-size: 0.72rem; color: #334155; background: #F1F5F9; border: 1px solid #CBD5E1; font-weight: 700; padding: 2px 6px; border-radius: 4px;">
                                     Code: <?= htmlspecialchars($schItem['school_code']) ?>
+                                </span>
+                            <?php endif; ?>
+                            <?php if (!empty($schItem['udise_code'])): ?>
+                                <span style="font-size: 0.72rem; color: #1D4ED8; background: #EFF6FF; border: 1px solid #BFDBFE; font-weight: 700; padding: 2px 6px; border-radius: 4px;">
+                                    UDISE: <?= htmlspecialchars($schItem['udise_code']) ?>
                                 </span>
                             <?php endif; ?>
                             <?php if (!empty($schItem['status'])): ?>

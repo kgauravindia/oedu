@@ -72,6 +72,11 @@ if (isset($pdo)) {
             <span class="badge bg-secondary rounded-pill">33k</span>
         </a>
 
+        <a href="../syllabus.php" target="_blank" class="nav-link-custom">
+            <i class="fas fa-book-open" style="color: #6366F1;"></i>
+            <span>Curriculum &amp; Syllabus</span>
+        </a>
+
         <div class="nav-section-title">Admissions & Leads</div>
         <a href="students.php" class="nav-link-custom <?= $currentPage === 'students.php' ? 'active' : '' ?>">
             <i class="fas fa-user-graduate text-warning"></i>

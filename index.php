@@ -22,7 +22,7 @@ try {
     $totalUniversities = 1505;
     $totalColleges = 54351;
     $totalInstitutes = 17010;
-    $totalSchools = 33130;
+    $totalSchools = 33233;
 }
 
 $totalInstitutions = $totalUniversities + $totalColleges + $totalInstitutes + $totalSchools;
@@ -32,8 +32,8 @@ if ($totalInstitutions < 100000) {
     $totalUniversities = $totalUniversities ?: 1505;
     $totalColleges = $totalColleges ?: 54351;
     $totalInstitutes = $totalInstitutes ?: 17010;
-    $totalSchools = $totalSchools ?: 33130;
-    $totalInstitutions = 105996;
+    $totalSchools = $totalSchools ?: 33233;
+    $totalInstitutions = 106099;
 }
 
 // 3. User Filter Inputs
@@ -78,8 +78,8 @@ $universities = $instStmt->fetchAll();
 $stateCountStmt = $pdo->query("SELECT state, COUNT(*) as c FROM university GROUP BY state");
 $stateCounts = $stateCountStmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
-$pageTitle = 'Online Education — National Education Directory of India | 105,996 Verified Institutions';
-$pageDesc = 'Official National Directory of 105,996 verified institutions across all 36 States & 780 Districts of India: 1,505 Universities, 54,351 Colleges, 17,010 Standalone Institutes, and 33,130 CBSE Schools.';
+$pageTitle = 'Online Education — National Education Directory of India | 106,099 Verified Institutions';
+$pageDesc = 'Official National Directory of 106,099 verified institutions across all 36 States & 780 Districts of India: 1,505 Universities, 54,351 Colleges, 17,010 Standalone Institutes, and 33,233 CBSE Schools.';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -88,7 +88,7 @@ require_once __DIR__ . '/includes/header.php';
     <div style="display: inline-flex; align-items: center; gap: 8px; background: var(--orange-light); border: 1.5px solid var(--orange-border); color: var(--orange-dark); font-size: 0.8rem; font-weight: 800; padding: 4px 14px; border-radius: 999px; margin-bottom: 14px;">
         <span>🇮🇳 राष्ट्रीय उच्च एवं विद्यालय शिक्षा मंच</span>
         <span>•</span>
-        <span>National Education Directory (105,996 Total)</span>
+        <span>National Education Directory (106,099 Total)</span>
     </div>
 
     <h1 style="font-size: 2.3rem; font-weight: 800; color: #111827; letter-spacing: -0.6px; line-height: 1.2; margin-bottom: 8px;">
@@ -98,7 +98,7 @@ require_once __DIR__ . '/includes/header.php';
         विश्वविद्यालय, महाविद्यालय, संस्थान एवं विद्यालय — One Education Platform for Every People
     </div>
     <p style="font-size: 0.96rem; color: #4B5563; max-width: 760px; margin: 0 auto 24px; line-height: 1.55;">
-        Complete, unified directory across all 36 States and 780 Districts of India. Explore 105,996 verified institutions: 1,505 Universities, 54,351 Affiliated Colleges, 17,010 Standalone Institutes, and 33,130 CBSE Schools.
+        Complete, unified directory across all 36 States and 780 Districts of India. Explore 106,099 verified institutions: 1,505 Universities, 54,351 Affiliated Colleges, 17,010 Standalone Institutes, and 33,233 CBSE Schools.
     </p>
 
     <!-- National Statistics Bar (Direct clickable portals) -->

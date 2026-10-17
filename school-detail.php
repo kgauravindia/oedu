@@ -6,8 +6,9 @@ $slug = trim($_GET['slug'] ?? '');
 $id = (int)($_GET['id'] ?? 0);
 $affNo = trim($_GET['aff'] ?? '');
 $schCode = trim($_GET['code'] ?? '');
+$udise = trim($_GET['udise'] ?? '');
 
-if (!$slug && !$id && !$affNo && !$schCode) {
+if (!$slug && !$id && !$affNo && !$schCode && !$udise) {
     header("Location: school.php");
     exit;
 }
@@ -35,9 +36,13 @@ if ($slug) {
     $stmt = $pdo->prepare("SELECT * FROM `school` WHERE affiliation_no = :aff LIMIT 1");
     $stmt->execute([':aff' => $affNo]);
     $school = $stmt->fetch(PDO::FETCH_ASSOC);
-} else {
+} elseif ($schCode) {
     $stmt = $pdo->prepare("SELECT * FROM `school` WHERE school_code = :code LIMIT 1");
     $stmt->execute([':code' => $schCode]);
+    $school = $stmt->fetch(PDO::FETCH_ASSOC);
+} else {
+    $stmt = $pdo->prepare("SELECT * FROM `school` WHERE udise_code = :udise LIMIT 1");
+    $stmt->execute([':udise' => $udise]);
     $school = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
@@ -166,6 +171,24 @@ require_once __DIR__ . '/includes/header.php';
                         <?= htmlspecialchars($school['school_code'] ?: 'N/A') ?>
                     </div>
                 </div>
+
+                <?php if (!empty($school['udise_code'])): ?>
+                    <div>
+                        <div style="font-size: 0.76rem; font-weight: 700; color: #6B7280; text-transform: uppercase;">National UDISE Code</div>
+                        <div style="font-size: 1.05rem; font-weight: 800; color: #1D4ED8;">
+                            <?= htmlspecialchars($school['udise_code']) ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (!empty($school['pincode'])): ?>
+                    <div>
+                        <div style="font-size: 0.76rem; font-weight: 700; color: #6B7280; text-transform: uppercase;">Postal PIN Code</div>
+                        <div style="font-size: 1.05rem; font-weight: 800; color: #111827;">
+                            <?= htmlspecialchars($school['pincode']) ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
 
                 <div>
                     <div style="font-size: 0.76rem; font-weight: 700; color: #6B7280; text-transform: uppercase;">School Level</div>
