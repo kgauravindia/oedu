@@ -35,6 +35,7 @@ $educators = [];
 $universitiesList = [];
 $schoolsList = [];
 $collegesList = [];
+$lawCollegesList = [];
 $institutesList = [];
 $examinations = [];
 $scholarships = [];
@@ -124,6 +125,40 @@ if ($isSearchApplied) {
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         $collegesList = $stmt->fetchAll();
+    }
+
+    // 3b. BCI Approved Law Colleges
+    if (in_array($type, ['all', 'law', 'law_colleges', 'colleges', 'institutions'])) {
+        $sql = "SELECT 
+            slug,
+            name,
+            state,
+            affiliating_university,
+            MIN(NULLIF(e_year, '')) as est_year,
+            COUNT(*) as total_courses,
+            GROUP_CONCAT(course_name SEPARATOR ' || ') as courses_list,
+            MAX(approval_till) as latest_approval
+        FROM law_college 
+        WHERE status = 'ACTIVE'";
+        $params = [];
+        if ($query !== '') {
+            $sql .= " AND (name LIKE ? OR affiliating_university LIKE ? OR course_name LIKE ? OR state LIKE ?)";
+            $params = array_merge($params, [$searchWildcard, $searchWildcard, $searchWildcard, $searchWildcard]);
+        }
+        if ($state !== '') {
+            $sql .= " AND state = ?";
+            $params[] = $state;
+        }
+        $sql .= " GROUP BY slug, name, state, affiliating_university";
+        if ($query !== '') {
+            $sql .= " ORDER BY (CASE WHEN name LIKE ? THEN 1 ELSE 2 END), name ASC LIMIT {$limit}";
+            $params[] = "{$query}%";
+        } else {
+            $sql .= " ORDER BY name ASC LIMIT {$limit}";
+        }
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $lawCollegesList = $stmt->fetchAll();
     }
 
     // 4. Standalone Institutes (AISHE Directory - 17,000+ Institutes)
@@ -242,6 +277,10 @@ if ($isSearchApplied) {
     } catch (Exception $e) { $collegesList = []; }
 
     try {
+        $lawCollegesList = $pdo->query("SELECT slug, name, state, affiliating_university, COUNT(*) as total_courses, GROUP_CONCAT(course_name SEPARATOR ' || ') as courses_list, MAX(approval_till) as latest_approval FROM law_college WHERE status = 'ACTIVE' GROUP BY slug, name, state, affiliating_university ORDER BY id ASC LIMIT 6")->fetchAll();
+    } catch (Exception $e) { $lawCollegesList = []; }
+
+    try {
         $institutesList = $pdo->query("SELECT * FROM institute ORDER BY id ASC LIMIT 6")->fetchAll();
     } catch (Exception $e) { $institutesList = []; }
 
@@ -254,7 +293,7 @@ if ($isSearchApplied) {
     } catch (Exception $e) { $scholarships = []; }
 }
 
-$totalResults = count($schoolsList) + count($resources) + count($educators) + count($universitiesList) + count($collegesList) + count($institutesList) + count($examinations) + count($scholarships);
+$totalResults = count($schoolsList) + count($resources) + count($educators) + count($universitiesList) + count($collegesList) + count($lawCollegesList) + count($institutesList) + count($examinations) + count($scholarships);
 
 $locationTitle = '';
 if ($district && $state) {
@@ -365,6 +404,9 @@ require_once __DIR__ . '/includes/header.php';
     </a>
     <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&district=<?= urlencode($district) ?>&type=colleges" class="btn <?= $type === 'colleges' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
         🎓 Colleges (<?= count($collegesList) ?>)
+    </a>
+    <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&district=<?= urlencode($district) ?>&type=law" class="btn <?= in_array($type, ['law', 'law_colleges']) ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
+        ⚖️ Law Colleges (<?= count($lawCollegesList) ?>)
     </a>
     <a href="search.php?q=<?= urlencode($query) ?>&state=<?= urlencode($state) ?>&district=<?= urlencode($district) ?>&type=institutes" class="btn <?= $type === 'institutes' ? 'btn-primary' : 'btn-outline' ?>" style="font-size: 0.82rem; white-space: nowrap;">
         🏢 Standalone Institutes (<?= count($institutesList) ?>)
@@ -581,6 +623,62 @@ require_once __DIR__ . '/includes/header.php';
                                 🌐 Web
                             </a>
                         <?php endif; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+<?php endif; ?>
+
+<!-- 3b. Law Colleges (Bar Council of India Recognized) -->
+<?php if (!empty($lawCollegesList)): ?>
+    <div style="margin-bottom: 36px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--charcoal); margin: 0;">
+                ⚖️ BCI Law Colleges (<?= count($lawCollegesList) ?>)
+            </h3>
+            <a href="law-college.php<?= $state ? '?state=' . urlencode($state) : '' ?>" style="font-size: 0.85rem; font-weight: 700; color: var(--orange);">View All 3,170+ Law Colleges →</a>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+            <?php foreach ($lawCollegesList as $lawItem): 
+                $lCourses = array_filter(explode(' || ', $lawItem['courses_list'] ?? ''));
+            ?>
+                <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm);">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 0.72rem; font-weight: 800; background: #1E3A8A; color: #FFF; padding: 2px 7px; border-radius: 4px;">
+                                BCI Approved
+                            </span>
+                            <span style="font-size: 0.72rem; color: #166534; background: #DCFCE7; border: 1px solid #BBF7D0; font-weight: 700; padding: 2px 6px; border-radius: 4px;">
+                                <?= $lawItem['total_courses'] ?> Course<?= $lawItem['total_courses'] > 1 ? 's' : '' ?>
+                            </span>
+                        </div>
+                        <h4 style="font-size: 1rem; font-weight: 700; color: var(--charcoal); line-height: 1.35; margin-bottom: 6px;">
+                            <a href="law-college/<?= urlencode($lawItem['slug']) ?>" style="color: var(--charcoal); text-decoration: none;">
+                                <?= htmlspecialchars($lawItem['name']) ?>
+                            </a>
+                        </h4>
+                        <div style="font-size: 0.82rem; color: var(--slate-muted); margin-bottom: 8px;">
+                            📍 State: <strong><?= htmlspecialchars($lawItem['state']) ?></strong>
+                        </div>
+                        <?php if (!empty($lawItem['affiliating_university'])): ?>
+                            <div style="font-size: 0.74rem; color: #64748B; background: #F8FAFC; padding: 4px 8px; border-radius: 4px; margin-bottom: 8px; border: 1px solid #E2E8F0;">
+                                Affiliated to: <strong><?= htmlspecialchars($lawItem['affiliating_university']) ?></strong>
+                            </div>
+                        <?php endif; ?>
+                        <?php if (!empty($lCourses)): ?>
+                            <div style="font-size: 0.76rem; color: #475569; margin-bottom: 12px;">
+                                📜 <?= htmlspecialchars(implode(', ', array_slice($lCourses, 0, 2))) ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center; border-top: 1px solid #F3F4F6; padding-top: 12px;">
+                        <a href="law-college/<?= urlencode($lawItem['slug']) ?>" class="btn btn-primary" style="flex: 1; text-align: center; font-size: 0.82rem; padding: 7px 12px;">
+                            View Law Programs →
+                        </a>
+                        <a href="index.php#counseling-box" class="btn btn-outline" style="font-size: 0.82rem; padding: 7px 12px;">
+                            Enquire
+                        </a>
                     </div>
                 </div>
             <?php endforeach; ?>

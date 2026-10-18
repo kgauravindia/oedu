@@ -19,6 +19,9 @@
     # Clean URL for School: /school/cbse-school-name
     RewriteRule ^school/([^/]+)/?$ school-detail.php?slug=$1 [L,QSA]
 
+    # Clean URL for Law College: /law-college/law-college-name
+    RewriteRule ^law-college/([^/]+)/?$ law-college-detail.php?slug=$1 [L,QSA]
+
     # Clean URL for Syllabus: /syllabus
     RewriteRule ^syllabus/?$ syllabus.php [L,QSA]
 

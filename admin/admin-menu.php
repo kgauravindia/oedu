@@ -55,6 +55,12 @@ if (isset($pdo)) {
             <span class="badge bg-secondary rounded-pill"><?= $menuBadgeCounts['colleges'] ?></span>
         </a>
 
+        <a href="law-colleges.php" class="nav-link-custom <?= $currentPage === 'law-colleges.php' ? 'active' : '' ?>">
+            <i class="fas fa-balance-scale" style="color: #60A5FA;"></i>
+            <span>BCI Law Colleges</span>
+            <span class="badge bg-secondary rounded-pill">3.1k</span>
+        </a>
+
         <a href="institutes.php" class="nav-link-custom <?= $currentPage === 'institutes.php' ? 'active' : '' ?>">
             <i class="fas fa-building-columns" style="color: #38BDF8;"></i>
             <span>Standalone Institutes</span>
@@ -102,6 +108,11 @@ if (isset($pdo)) {
         <a href="change-password.php" class="nav-link-custom <?= $currentPage === 'change-password.php' ? 'active' : '' ?>">
             <i class="fas fa-key text-warning"></i>
             <span>Change Password</span>
+        </a>
+
+        <a href="git.php" class="nav-link-custom <?= $currentPage === 'git.php' ? 'active' : '' ?>">
+            <i class="fab fa-git-alt" style="color: #F05032;"></i>
+            <span>Git Version &amp; Sync</span>
         </a>
 
         <a href="sitemap.php" class="nav-link-custom <?= $currentPage === 'sitemap.php' ? 'active' : '' ?>">

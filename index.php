@@ -16,6 +16,7 @@ try {
     $totalColleges = (int) $pdo->query("SELECT COUNT(*) FROM college")->fetchColumn();
     $totalInstitutes = (int) $pdo->query("SELECT COUNT(*) FROM institute")->fetchColumn();
     $totalSchools = (int) $pdo->query("SELECT COUNT(*) FROM `school`")->fetchColumn();
+    $totalLawColleges = (int) $pdo->query("SELECT COUNT(DISTINCT slug) FROM `law_college` WHERE status = 'ACTIVE'")->fetchColumn();
 } catch (Throwable $e) {
     $totalStatesCount = 36;
     $totalDistrictsCount = 780;
@@ -23,9 +24,10 @@ try {
     $totalColleges = 54351;
     $totalInstitutes = 17010;
     $totalSchools = 33233;
+    $totalLawColleges = 3172;
 }
 
-$totalInstitutions = $totalUniversities + $totalColleges + $totalInstitutes + $totalSchools;
+$totalInstitutions = $totalUniversities + $totalColleges + $totalInstitutes + $totalSchools + $totalLawColleges;
 if ($totalInstitutions < 100000) {
     $totalStatesCount = $totalStatesCount ?: 36;
     $totalDistrictsCount = $totalDistrictsCount ?: 780;
@@ -127,6 +129,11 @@ require_once __DIR__ . '/includes/header.php';
             <div style="font-size: 1.5rem; font-weight: 800; color: #7C3AED;"><?= number_format($totalSchools) ?></div>
             <div style="font-size: 0.75rem; font-weight: 800; color: #111827;">🏫 CBSE Schools</div>
             <div style="font-size: 0.68rem; color: #7C3AED; font-weight: 800;">Browse 33K+ →</div>
+        </a>
+        <a href="law-college.php" style="padding: 6px; display: block; background: #FFFFFF; border: 1.5px solid #2563EB; border-radius: 6px; box-shadow: 0 2px 6px rgba(37,99,235,0.12);">
+            <div style="font-size: 1.5rem; font-weight: 800; color: #1D4ED8;"><?= number_format($totalLawColleges) ?></div>
+            <div style="font-size: 0.75rem; font-weight: 800; color: #111827;">⚖️ Law Colleges</div>
+            <div style="font-size: 0.68rem; color: #1D4ED8; font-weight: 800;">BCI Approved →</div>
         </a>
         <div style="padding: 6px;">
             <div style="font-size: 1.5rem; font-weight: 800; color: #111827;"><?= $totalStatesCount ?></div>

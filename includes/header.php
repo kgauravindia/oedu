@@ -182,10 +182,13 @@ if (!isset($pageDesc)) {
                 <a href="institution.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'institution.php' ? 'active' : '' ?>">
                     <span>🏛️</span> Universities <span class="ribbon-badge">1,505</span>
                 </a>
-                <a href="college.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'college.php' ? 'active' : '' ?>">
+                <a href="college.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'college.php' || basename($_SERVER['PHP_SELF']) == 'college-detail.php' ? 'active' : '' ?>">
                     <span>🎓</span> Colleges <span class="ribbon-badge">54K+</span>
                 </a>
-                <a href="institute.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'institute.php' ? 'active' : '' ?>">
+                <a href="law-college.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'law-college.php' || basename($_SERVER['PHP_SELF']) == 'law-college-detail.php' ? 'active' : '' ?>">
+                    <span>⚖️</span> Law Colleges <span class="ribbon-badge">3.1K+</span>
+                </a>
+                <a href="institute.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'institute.php' || basename($_SERVER['PHP_SELF']) == 'institute-detail.php' ? 'active' : '' ?>">
                     <span>🏢</span> Institutes <span class="ribbon-badge">17K+</span>
                 </a>
                 <a href="syllabus.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'syllabus.php' ? 'active' : '' ?>">
@@ -259,12 +262,17 @@ if (!isset($pageDesc)) {
                     <span class="drawer-nav-text">Universities (Central / State / IIT)</span>
                     <span class="drawer-badge">1,505</span>
                 </a>
-                <a href="college.php" class="drawer-nav-link <?= basename($_SERVER['PHP_SELF']) == 'college.php' ? 'active' : '' ?>">
+                <a href="college.php" class="drawer-nav-link <?= basename($_SERVER['PHP_SELF']) == 'college.php' || basename($_SERVER['PHP_SELF']) == 'college-detail.php' ? 'active' : '' ?>">
                     <span class="drawer-nav-icon">🎓</span>
                     <span class="drawer-nav-text">Affiliated Colleges</span>
                     <span class="drawer-badge">54,351</span>
                 </a>
-                <a href="institute.php" class="drawer-nav-link <?= basename($_SERVER['PHP_SELF']) == 'institute.php' ? 'active' : '' ?>">
+                <a href="law-college.php" class="drawer-nav-link <?= basename($_SERVER['PHP_SELF']) == 'law-college.php' || basename($_SERVER['PHP_SELF']) == 'law-college-detail.php' ? 'active' : '' ?>">
+                    <span class="drawer-nav-icon">⚖️</span>
+                    <span class="drawer-nav-text">BCI Law Colleges</span>
+                    <span class="drawer-badge">3,172</span>
+                </a>
+                <a href="institute.php" class="drawer-nav-link <?= basename($_SERVER['PHP_SELF']) == 'institute.php' || basename($_SERVER['PHP_SELF']) == 'institute-detail.php' ? 'active' : '' ?>">
                     <span class="drawer-nav-icon">🏢</span>
                     <span class="drawer-nav-text">Standalone Institutes</span>
                     <span class="drawer-badge">17,010</span>

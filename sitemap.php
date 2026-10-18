@@ -30,7 +30,8 @@ function generateSitemapXmlContent(string $section, string $siteUrl, PDO $pdo): 
             'colleges-2' => 'sitemap-colleges-2.xml',
             'colleges-3' => 'sitemap-colleges-3.xml',
             'institutes' => 'sitemap-institutes.xml',
-            'schools' => 'sitemap-schools.xml'
+            'schools' => 'sitemap-schools.xml',
+            'law-colleges' => 'sitemap-law-colleges.xml'
         ];
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
@@ -53,6 +54,7 @@ function generateSitemapXmlContent(string $section, string $siteUrl, PDO $pdo): 
             ['loc' => '', 'priority' => '1.0', 'freq' => 'daily'],
             ['loc' => '/institution.php', 'priority' => '0.9', 'freq' => 'daily'],
             ['loc' => '/college.php', 'priority' => '0.9', 'freq' => 'daily'],
+            ['loc' => '/law-college.php', 'priority' => '0.9', 'freq' => 'daily'],
             ['loc' => '/institute.php', 'priority' => '0.9', 'freq' => 'daily'],
             ['loc' => '/school.php', 'priority' => '0.9', 'freq' => 'daily'],
             ['loc' => '/search.php', 'priority' => '0.8', 'freq' => 'weekly'],
@@ -146,6 +148,17 @@ function generateSitemapXmlContent(string $section, string $siteUrl, PDO $pdo): 
             $lastmod = !empty($row['updated_at']) ? substr($row['updated_at'], 0, 10) : $today;
             $xml .= "    <url>\n";
             $xml .= "        <loc>" . htmlspecialchars("{$siteUrl}/school/" . urlencode($row['slug'])) . "</loc>\n";
+            $xml .= "        <lastmod>{$lastmod}</lastmod>\n";
+            $xml .= "        <changefreq>monthly</changefreq>\n";
+            $xml .= "        <priority>0.8</priority>\n";
+            $xml .= "    </url>\n";
+        }
+    } elseif ($section === 'law-colleges') {
+        $stmt = $pdo->query("SELECT slug, MAX(updated_at) as updated_at FROM `law_college` WHERE slug IS NOT NULL AND slug != '' AND status = 'ACTIVE' GROUP BY slug ORDER BY slug ASC");
+        while ($row = $stmt->fetch()) {
+            $lastmod = !empty($row['updated_at']) ? substr($row['updated_at'], 0, 10) : $today;
+            $xml .= "    <url>\n";
+            $xml .= "        <loc>" . htmlspecialchars("{$siteUrl}/law-college/" . urlencode($row['slug'])) . "</loc>\n";
             $xml .= "        <lastmod>{$lastmod}</lastmod>\n";
             $xml .= "        <changefreq>monthly</changefreq>\n";
             $xml .= "        <priority>0.8</priority>\n";
