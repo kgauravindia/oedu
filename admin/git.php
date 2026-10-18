@@ -10,31 +10,97 @@ $cmdOutput = '';
 
 $repoDir = dirname(__DIR__);
 
-// Helper to run git safely in repository root
-function runGitCommand(string $cmd, string $repoDir): array {
-    $command = "cd /d \"{$repoDir}\" && {$cmd} 2>&1";
+// Locate Git binary automatically
+function getGitExecutable(): string {
+    static $gitBin = null;
+    if ($gitBin !== null) {
+        return $gitBin;
+    }
+    $candidates = [
+        'git',
+        'C:\Program Files\Git\cmd\git.exe',
+        'C:\Program Files\Git\bin\git.exe',
+        'C:\Program Files (x86)\Git\cmd\git.exe',
+        'D:\laragon\bin\git\bin\git.exe',
+        'D:\laragon\bin\git\cmd\git.exe',
+        'C:\laragon\bin\git\bin\git.exe',
+    ];
+    foreach ($candidates as $cand) {
+        if ($cand === 'git') {
+            $test = [];
+            $ret = 0;
+            @exec("git --version 2>&1", $test, $ret);
+            if ($ret === 0) {
+                $gitBin = 'git';
+                return $gitBin;
+            }
+        } elseif (file_exists($cand)) {
+            $gitBin = '"' . $cand . '"';
+            return $gitBin;
+        }
+    }
+    $gitBin = 'git';
+    return $gitBin;
+}
+
+// Helper to run git safely in repository root with non-interactive prompts and token support
+function runGitCommand(string $cmd, string $repoDir, ?string $token = null): array {
+    $gitExe = getGitExecutable();
+    $repoDirNorm = str_replace('/', DIRECTORY_SEPARATOR, $repoDir);
+    
+    // Normalize command with executable and safe.directory=*
+    $safeCmd = preg_replace('/^git\b/', "{$gitExe} -c safe.directory=* ", $cmd);
+    
+    // If token is provided, inject it for authenticated GitHub remote
+    if (!empty($token) && (str_contains($cmd, 'push') || str_contains($cmd, 'pull') || str_contains($cmd, 'fetch'))) {
+        $authRemote = "https://{$token}@github.com/kgauravindia/oedu.git";
+        $safeCmd = preg_replace('/\borigin\b/', "\"{$authRemote}\"", $safeCmd, 1);
+    }
+    
+    $fullCommand = "set \"GIT_TERMINAL_PROMPT=0\" && cd /d \"{$repoDirNorm}\" && {$safeCmd} 2>&1";
     $output = [];
     $returnCode = 0;
-    exec($command, $output, $returnCode);
+    exec($fullCommand, $output, $returnCode);
+    
+    $outText = implode("\n", $output);
+    if (!empty($token)) {
+        $outText = str_replace($token, '***TOKEN***', $outText);
+    }
+    
     return [
         'code' => $returnCode,
-        'output' => implode("\n", $output),
+        'output' => $outText,
         'cmd' => $cmd
     ];
 }
 
+// Load saved GitHub token from admin_settings
+$githubToken = '';
+try {
+    $stmt = $pdo->query("SELECT setting_value FROM admin_settings WHERE setting_key = 'github_token' LIMIT 1");
+    $githubToken = (string)($stmt->fetchColumn() ?: '');
+} catch (Throwable $e) {}
+
 // Handle Git Actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
+    $token = trim($_POST['token'] ?? $githubToken);
 
-    if ($action === 'fetch') {
-        $res = runGitCommand('git fetch origin', $repoDir);
+    if ($action === 'save_token') {
+        $tokenVal = trim($_POST['github_token'] ?? '');
+        $pdo->prepare("INSERT INTO admin_settings (setting_key, setting_value) VALUES ('github_token', :v) ON DUPLICATE KEY UPDATE setting_value = :v2")
+            ->execute([':v' => $tokenVal, ':v2' => $tokenVal]);
+        $githubToken = $tokenVal;
+        $msg = "GitHub Personal Access Token saved successfully.";
+        $msgType = 'success';
+    } elseif ($action === 'fetch') {
+        $res = runGitCommand('git fetch origin', $repoDir, $token);
         $cmdOutput = "$ git fetch origin\n" . ($res['output'] ?: 'Repository fetched successfully. No new changes.');
-        $msg = "Git fetch completed.";
+        $msg = ($res['code'] === 0) ? "Git fetch completed." : "Git fetch failed. Check credentials or console output.";
         $msgType = ($res['code'] === 0) ? 'success' : 'danger';
     } elseif ($action === 'pull') {
         $branch = trim($_POST['branch'] ?? 'main');
-        $res = runGitCommand("git pull origin {$branch}", $repoDir);
+        $res = runGitCommand("git pull origin {$branch}", $repoDir, $token);
         $cmdOutput = "$ git pull origin {$branch}\n" . $res['output'];
         if ($res['code'] === 0) {
             $msg = "Pulled successfully from origin/{$branch}.";
@@ -43,40 +109,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $msg = "Git pull failed. Check console output.";
             $msgType = 'danger';
         }
+    } elseif ($action === 'push') {
+        $branch = trim($_POST['branch'] ?? 'main');
+        $res = runGitCommand("git push origin {$branch}", $repoDir, $token);
+        $cmdOutput = "$ git push origin {$branch}\n" . $res['output'];
+        if ($res['code'] === 0) {
+            $msg = "Pushed successfully to origin/{$branch}!";
+            $msgType = 'success';
+        } else {
+            $msg = "Git push failed. If GitHub requires authentication, save your Personal Access Token below.";
+            $msgType = 'danger';
+        }
     } elseif ($action === 'commit_push') {
         $commitMsg = trim($_POST['commit_message'] ?? '');
         $branch = trim($_POST['branch'] ?? 'main');
         
-        if (empty($commitMsg)) {
-            $msg = "Commit message cannot be empty.";
-            $msgType = 'danger';
-        } else {
-            // Escape double quotes in commit message
+        $statusCheck = runGitCommand('git status -s', $repoDir);
+        $hasChanges = !empty(trim($statusCheck['output'] ?? ''));
+        $fullLogs = [];
+        
+        if ($hasChanges) {
+            if (empty($commitMsg)) {
+                $commitMsg = "Update portal features and verified institution directories";
+            }
             $safeMsg = addslashes($commitMsg);
             
             // 1. git add .
             $addRes = runGitCommand('git add .', $repoDir);
+            $fullLogs[] = "$ git add .\n" . ($addRes['output'] ?: 'Changes staged.');
             
             // 2. git commit -m "..."
             $commitRes = runGitCommand("git commit -m \"{$safeMsg}\"", $repoDir);
-            
-            // 3. git push origin branch
-            $pushRes = runGitCommand("git push origin {$branch}", $repoDir);
-            
-            $cmdOutput = "$ git add .\n" . $addRes['output'] . "\n\n"
-                       . "$ git commit -m \"{$safeMsg}\"\n" . $commitRes['output'] . "\n\n"
-                       . "$ git push origin {$branch}\n" . $pushRes['output'];
+            $fullLogs[] = "$ git commit -m \"{$safeMsg}\"\n" . $commitRes['output'];
+        } else {
+            $fullLogs[] = "# Working tree is clean. Proceeding to push pending commits...";
+        }
+        
+        // 3. git push origin branch
+        $pushRes = runGitCommand("git push origin {$branch}", $repoDir, $token);
+        $fullLogs[] = "$ git push origin {$branch}\n" . $pushRes['output'];
+        
+        $cmdOutput = implode("\n\n", $fullLogs);
 
-            if ($pushRes['code'] === 0) {
-                $msg = "Changes committed & pushed to origin/{$branch} successfully!";
-                $msgType = 'success';
-            } elseif ($commitRes['code'] === 0 && $pushRes['code'] !== 0) {
-                $msg = "Changes committed locally, but push failed. Check console output.";
-                $msgType = 'warning';
-            } else {
-                $msg = "Git commit / push encountered an issue. See console below.";
-                $msgType = 'danger';
-            }
+        if ($pushRes['code'] === 0) {
+            $msg = $hasChanges 
+                ? "Changes committed & pushed to origin/{$branch} successfully!" 
+                : "Pending commits pushed to origin/{$branch} successfully!";
+            $msgType = 'success';
+        } else {
+            $msg = "Git push encountered an issue. See console output below.";
+            $msgType = 'danger';
         }
     } elseif ($action === 'stash') {
         $res = runGitCommand('git stash', $repoDir);
@@ -94,9 +176,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Query Current Git State
 $branchRes = runGitCommand('git rev-parse --abbrev-ref HEAD', $repoDir);
 $currentBranch = trim($branchRes['output'] ?: 'main');
+if (str_contains($currentBranch, "\n") || str_contains($currentBranch, 'fatal:')) {
+    $currentBranch = 'main';
+}
 
 $remoteRes = runGitCommand('git remote get-url origin', $repoDir);
 $remoteUrl = trim($remoteRes['output'] ?: '');
+if (str_contains($remoteUrl, 'fatal:')) {
+    $remoteUrl = 'https://github.com/kgauravindia/oedu.git';
+}
+
+// Calculate Ahead / Behind commits vs origin
+$aheadCount = 0;
+$behindCount = 0;
+try {
+    $aheadRes = runGitCommand("git rev-list --count origin/{$currentBranch}..HEAD", $repoDir);
+    if ($aheadRes['code'] === 0) {
+        $aheadCount = (int)trim($aheadRes['output']);
+    }
+    $behindRes = runGitCommand("git rev-list --count HEAD..origin/{$currentBranch}", $repoDir);
+    if ($behindRes['code'] === 0) {
+        $behindCount = (int)trim($behindRes['output']);
+    }
+} catch (Throwable $e) {}
 
 $lastCommitRes = runGitCommand('git log -1 --format="%h|%an|%ar|%s|%cd"', $repoDir);
 $lastCommitParts = explode('|', trim($lastCommitRes['output'] ?: ''));
@@ -200,7 +302,7 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
                     </h4>
                     <p class="text-muted small mb-0">Manage repository branch, inspect pending modifications, pull updates, and sync to remote repository.</p>
                 </div>
-                <div class="d-flex gap-2">
+                <div class="d-flex flex-wrap gap-2">
                     <form method="POST" style="display: inline;">
                         <input type="hidden" name="action" value="fetch">
                         <button type="submit" class="btn btn-outline-secondary btn-sm px-3 shadow-sm">
@@ -211,11 +313,24 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
                         <input type="hidden" name="action" value="pull">
                         <input type="hidden" name="branch" value="<?= htmlspecialchars($currentBranch) ?>">
                         <button type="submit" class="btn btn-outline-primary btn-sm px-3 shadow-sm">
-                            <i class="fas fa-cloud-download-alt me-1"></i> Git Pull (Sync Down)
+                            <i class="fas fa-cloud-download-alt me-1"></i> Git Pull
+                        </button>
+                    </form>
+                    <form method="POST" onsubmit="return confirm('Push all committed changes to origin/<?= htmlspecialchars($currentBranch) ?>?');" style="display: inline;">
+                        <input type="hidden" name="action" value="push">
+                        <input type="hidden" name="branch" value="<?= htmlspecialchars($currentBranch) ?>">
+                        <button type="submit" class="btn btn-success btn-sm px-3 shadow-sm">
+                            <i class="fas fa-cloud-upload-alt me-1"></i> Git Push
+                            <?php if ($aheadCount > 0): ?>
+                                <span class="badge bg-white text-success ms-1"><?= $aheadCount ?></span>
+                            <?php endif; ?>
                         </button>
                     </form>
                     <button type="button" class="btn btn-primary-custom btn-sm px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#commitModal">
-                        <i class="fas fa-cloud-upload-alt me-1"></i> Commit &amp; Push
+                        <i class="fas fa-plus-circle me-1"></i> Commit &amp; Push
+                    </button>
+                    <button type="button" class="btn btn-outline-dark btn-sm px-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#tokenModal" title="Configure GitHub Authentication Token">
+                        <i class="fab fa-github me-1"></i> Token <?= $githubToken ? '✓' : '⚙' ?>
                     </button>
                 </div>
             </div>
@@ -224,6 +339,38 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
                 <div class="alert alert-<?= $msgType ?> alert-dismissible fade show alert-auto-dismiss" role="alert">
                     <?= htmlspecialchars($msg) ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
+
+            <!-- Sync Alert if Ahead or Behind -->
+            <?php if ($aheadCount > 0 || $behindCount > 0): ?>
+                <div class="alert alert-warning py-2 px-3 small d-flex align-items-center justify-content-between mb-4 shadow-sm" role="alert">
+                    <div>
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <?php if ($aheadCount > 0 && $behindCount > 0): ?>
+                            Your local branch has <strong><?= $aheadCount ?> unpushed commit(s)</strong> and is <strong><?= $behindCount ?> commit(s) behind</strong> origin.
+                        <?php elseif ($aheadCount > 0): ?>
+                            Your local branch has <strong><?= $aheadCount ?> unpushed commit(s)</strong> ready to push to remote.
+                        <?php else: ?>
+                            Your local branch is <strong><?= $behindCount ?> commit(s) behind</strong> remote. Run Git Pull to update.
+                        <?php endif; ?>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <?php if ($behindCount > 0): ?>
+                            <form method="POST" style="display: inline;">
+                                <input type="hidden" name="action" value="pull">
+                                <input type="hidden" name="branch" value="<?= htmlspecialchars($currentBranch) ?>">
+                                <button type="submit" class="btn btn-warning btn-sm py-0 px-2 fw-bold">Pull <?= $behindCount ?> commit(s)</button>
+                            </form>
+                        <?php endif; ?>
+                        <?php if ($aheadCount > 0): ?>
+                            <form method="POST" style="display: inline;">
+                                <input type="hidden" name="action" value="push">
+                                <input type="hidden" name="branch" value="<?= htmlspecialchars($currentBranch) ?>">
+                                <button type="submit" class="btn btn-success btn-sm py-0 px-2 fw-bold">Push <?= $aheadCount ?> commit(s)</button>
+                            </form>
+                        <?php endif; ?>
+                    </div>
                 </div>
             <?php endif; ?>
 
@@ -237,7 +384,13 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
                         <div class="stat-details">
                             <span class="stat-label">Active Branch</span>
                             <h4 class="stat-value text-danger mb-0"><?= htmlspecialchars($currentBranch) ?></h4>
-                            <small class="text-muted" style="font-size: 0.72rem;">Remote: origin/<?= htmlspecialchars($currentBranch) ?></small>
+                            <div class="d-flex align-items-center gap-1 mt-1">
+                                <?php if ($aheadCount === 0 && $behindCount === 0): ?>
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.68rem;">✓ In sync</span>
+                                <?php else: ?>
+                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle" style="font-size: 0.68rem;"><?= $aheadCount ?> ahead, <?= $behindCount ?> behind</span>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -457,7 +610,7 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
 
             <div class="modal-body">
                 <div class="alert alert-info py-2 small mb-3">
-                    <i class="fas fa-info-circle me-1"></i> This will run <code>git add .</code>, create a commit, and execute <code>git push origin <?= htmlspecialchars($currentBranch) ?></code>.
+                    <i class="fas fa-info-circle me-1"></i> This will stage all files (<code>git add .</code>), create a commit if there are changes, and execute <code>git push origin <?= htmlspecialchars($currentBranch) ?></code>.
                 </div>
 
                 <div class="mb-3">
@@ -474,6 +627,53 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" class="btn btn-primary-custom btn-sm px-3">
                     <i class="fas fa-check me-1"></i> Stage, Commit &amp; Push
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal for GitHub Personal Access Token (PAT) -->
+<div class="modal fade" id="tokenModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="POST" class="modal-content border-0 shadow">
+            <input type="hidden" name="action" value="save_token">
+
+            <div class="modal-header bg-light">
+                <h6 class="modal-title fw-bold text-dark">
+                    <i class="fab fa-github me-2 text-dark"></i>GitHub Authentication &amp; PAT
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="alert alert-info py-2 small mb-3">
+                    <i class="fas fa-key me-1"></i> A <strong>Personal Access Token (classic or fine-grained)</strong> allows the web server to push and pull to your GitHub repository without interactive desktop logins.
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-dark">GitHub Personal Access Token (PAT)</label>
+                    <input type="password" name="github_token" class="form-control font-monospace" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" value="<?= htmlspecialchars($githubToken) ?>">
+                    <small class="text-muted">
+                        Need a token? <a href="https://github.com/settings/tokens/new" target="_blank" class="text-decoration-none">Generate token on GitHub ↗</a> (Scope: <code>repo</code>).
+                    </small>
+                </div>
+
+                <?php if ($githubToken): ?>
+                    <div class="alert alert-success py-2 small mb-0">
+                        <i class="fas fa-check-circle me-1"></i> A token is currently saved and active.
+                    </div>
+                <?php else: ?>
+                    <div class="text-muted small">
+                        Leave blank if your system already has local SSH or system Git credentials configured.
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary-custom btn-sm px-3">
+                    <i class="fas fa-save me-1"></i> Save Token
                 </button>
             </div>
         </form>
