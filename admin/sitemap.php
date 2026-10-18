@@ -14,18 +14,24 @@ $uniCount = (int)$pdo->query("SELECT COUNT(*) FROM university WHERE slug IS NOT 
 $collegeCount = (int)$pdo->query("SELECT COUNT(*) FROM college WHERE slug IS NOT NULL AND slug != ''")->fetchColumn();
 $instituteCount = (int)$pdo->query("SELECT COUNT(*) FROM institute WHERE slug IS NOT NULL AND slug != ''")->fetchColumn();
 $schoolCount = (int)$pdo->query("SELECT COUNT(*) FROM `school`")->fetchColumn();
-$totalUrls = $uniCount + $collegeCount + $instituteCount + $schoolCount + 14; // 14 core portal pages
+$lawCollegeCount = 0;
+try {
+    $lawCollegeCount = (int)$pdo->query("SELECT COUNT(DISTINCT slug) FROM `law_college` WHERE status = 'ACTIVE' AND slug IS NOT NULL AND slug != ''")->fetchColumn();
+} catch (Throwable $e) {}
+
+$totalUrls = $uniCount + $collegeCount + $instituteCount + $schoolCount + $lawCollegeCount + 23; // 23 core portal pages
 
 // File definitions
 $sitemapFiles = [
-    'sitemap.xml' => ['title' => 'Master Sitemap Index', 'type' => 'index', 'urls' => 7],
-    'sitemap-main.xml' => ['title' => 'Core Portal Pages', 'type' => 'main', 'urls' => 14],
+    'sitemap.xml' => ['title' => 'Master Sitemap Index', 'type' => 'index', 'urls' => 8],
+    'sitemap-main.xml' => ['title' => 'Core Portal Pages', 'type' => 'main', 'urls' => 23],
     'sitemap-universities.xml' => ['title' => 'All Universities (/university/)', 'type' => 'universities', 'urls' => $uniCount],
     'sitemap-colleges-1.xml' => ['title' => 'Colleges Part 1 (1–25,000)', 'type' => 'colleges-1', 'urls' => min(25000, $collegeCount)],
     'sitemap-colleges-2.xml' => ['title' => 'Colleges Part 2 (25,001–50,000)', 'type' => 'colleges-2', 'urls' => max(0, min(25000, $collegeCount - 25000))],
     'sitemap-colleges-3.xml' => ['title' => 'Colleges Part 3 (50,001+)', 'type' => 'colleges-3', 'urls' => max(0, $collegeCount - 50000)],
     'sitemap-institutes.xml' => ['title' => 'Standalone Institutes (/institute/)', 'type' => 'institutes', 'urls' => $instituteCount],
-    'sitemap-schools.xml' => ['title' => 'CBSE Schools (/school/cbse-school-name)', 'type' => 'schools', 'urls' => $schoolCount]
+    'sitemap-schools.xml' => ['title' => 'CBSE Schools (/school/cbse-school-name)', 'type' => 'schools', 'urls' => $schoolCount],
+    'sitemap-law-colleges.xml' => ['title' => 'Law Colleges (/law-college/)', 'type' => 'law-colleges', 'urls' => $lawCollegeCount]
 ];
 
 define('SITEMAP_INTERNAL_CALL', true);
@@ -190,6 +196,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         </div>
                         <div class="stat-icon" style="background: #FAF5FF; color: #9333EA;">
                             <i class="fas fa-school"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-sm-6">
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-title">Law Colleges in Sitemap</div>
+                            <div class="stat-value"><?= number_format($lawCollegeCount) ?></div>
+                            <span class="stat-badge" style="background: #EFF6FF; color: #1D4ED8;">
+                                /law-college/{slug}
+                            </span>
+                        </div>
+                        <div class="stat-icon" style="background: #EFF6FF; color: #2563EB;">
+                            <i class="fas fa-balance-scale"></i>
                         </div>
                     </div>
                 </div>

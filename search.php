@@ -308,6 +308,13 @@ if ($district && $state) {
 
 $pageTitle = 'Search: ' . ($query ?: ($locationTitle ?: 'National Education Directory')) . ' — Online Education';
 $pageDesc = 'Search and compare CBSE schools, universities, affiliated colleges, standalone institutes, entrance exams, and scholarships across all 36 States & UTs of India.';
+
+// Do not index internal search queries to protect crawl budget according to Google guidelines
+if ($isSearchApplied) {
+    $pageRobots = 'noindex, follow';
+}
+$canonicalUrl = 'https://oedu.in/search.php';
+
 require_once __DIR__ . '/includes/header.php';
 ?>
 

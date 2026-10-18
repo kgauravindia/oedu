@@ -25,7 +25,9 @@ if ($slug) {
 $college = $stmt->fetch();
 
 if (!$college) {
-    $pageTitle = 'College Not Found | Online Education';
+    http_response_code(404);
+    $pageRobots = 'noindex, nofollow';
+    $pageTitle = 'College Not Found (404) | Online Education';
     require_once __DIR__ . '/includes/header.php';
     echo '<div style="background:#FFF; padding:48px 16px; text-align:center; border:1px solid #E5E7EB; border-radius:12px; margin:40px auto; max-width:600px;">';
     echo '<h2 style="color:#111827; font-weight:800;">College Not Found</h2>';
@@ -35,6 +37,16 @@ if (!$college) {
     require_once __DIR__ . '/includes/footer.php';
     exit;
 }
+
+// 301 Redirect to clean URL if accessed directly via college-detail.php
+if (!empty($college['slug']) && isset($_SERVER['REQUEST_URI']) && str_contains($_SERVER['REQUEST_URI'], 'college-detail.php')) {
+    header("Location: college/" . urlencode($college['slug']), true, 301);
+    exit;
+}
+
+// Canonical URL
+$canonicalSlug = !empty($college['slug']) ? urlencode($college['slug']) : ('c-' . $college['id']);
+$canonicalUrl = "https://oedu.in/college/{$canonicalSlug}";
 
 // Fetch other colleges under the same university or district
 $relatedColleges = [];
@@ -53,8 +65,57 @@ $mgmtColor = $isGovt ? '#166534' : '#1E40AF';
 $mgmtBg = $isGovt ? '#F0FDF4' : '#EFF6FF';
 $mgmtBorder = $isGovt ? '#BBF7D0' : '#BFDBFE';
 
-$pageTitle = htmlspecialchars($college['name']) . " ({$college['aishe_code']}) | National College Portal — Online Education";
-$pageDesc = htmlspecialchars($college['name']) . " in {$college['district']}, {$college['state']}. AISHE Code: {$college['aishe_code']}. Affiliated to {$college['university_name']}.";
+$pageTitle = "{$college['name']} ({$college['aishe_code']}) — Courses, Affiliation & Info | Online Education";
+$pageDesc = "{$college['name']} in {$college['district']}, {$college['state']}. AISHE Code: {$college['aishe_code']}. Affiliated with {$college['university_name']}. Comprehensive AISHE directory profile.";
+
+// Rich Schema.org Structured Data
+$pageJsonLd = [
+    "@context" => "https://schema.org",
+    "@graph" => [
+        array_filter([
+            "@type" => "CollegeOrUniversity",
+            "@id" => $canonicalUrl . "#institution",
+            "name" => $college['name'],
+            "url" => $canonicalUrl,
+            "description" => $pageDesc,
+            "identifier" => $college['aishe_code'],
+            "parentOrganization" => !empty($college['university_name']) ? [
+                "@type" => "CollegeOrUniversity",
+                "name" => $college['university_name']
+            ] : null,
+            "address" => [
+                "@type" => "PostalAddress",
+                "addressLocality" => $college['district'] ?? '',
+                "addressRegion" => $college['state'] ?? '',
+                "addressCountry" => "IN"
+            ]
+        ]),
+        [
+            "@type" => "BreadcrumbList",
+            "itemListElement" => [
+                [
+                    "@type" => "ListItem",
+                    "position" => 1,
+                    "name" => "Home",
+                    "item" => "https://oedu.in/"
+                ],
+                [
+                    "@type" => "ListItem",
+                    "position" => 2,
+                    "name" => "Colleges",
+                    "item" => "https://oedu.in/college.php"
+                ],
+                [
+                    "@type" => "ListItem",
+                    "position" => 3,
+                    "name" => $college['name'],
+                    "item" => $canonicalUrl
+                ]
+            ]
+        ]
+    ]
+];
+
 require_once __DIR__ . '/includes/header.php';
 ?>
 

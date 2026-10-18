@@ -3,23 +3,73 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+require_once __DIR__ . '/seo.php';
+
+$seoSettings = getSeoSettings($pdo ?? null);
+
 if (!isset($pageTitle)) {
-    $pageTitle = 'National University & College Directory of India | Online Education — Higher Education Portal';
+    $pageTitle = 'National University & College Directory of India | Online Education';
 }
 if (!isset($pageDesc)) {
-    $pageDesc = "Discover and compare Central Universities, IITs, IIMs, AIIMS, State Universities, Autonomous Colleges, NIRF Rankings, and CUET/Entrance Cut-offs on Online Education.";
+    $pageDesc = $seoSettings['meta_description'];
 }
+
+$cleanTitle = cleanSeoText($pageTitle);
+$cleanDesc = cleanSeoText($pageDesc);
+$finalCanonicalUrl = getCanonicalUrl($canonicalUrl ?? null);
+$robotsDirective = $pageRobots ?? 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
+$keywords = cleanSeoText($seoKeywords ?? $seoSettings['seo_keywords']);
+$ogImage = !empty($pageImage) ? $pageImage : rtrim($seoSettings['site_url'], '/') . '/' . ($seoSettings['seo_og_image'] ?? 'logo_full.png');
+$ogType = $pageOgType ?? 'website';
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" prefix="og: https://ogp.me/ns#">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
     <meta name="theme-color" content="#0B0F19">
-    <title><?= htmlspecialchars($pageTitle) ?></title>
-    <meta name="description" content="<?= htmlspecialchars($pageDesc) ?>">
+    
+    <!-- Primary SEO Metadata -->
+    <title><?= $cleanTitle ?></title>
+    <meta name="title" content="<?= $cleanTitle ?>">
+    <meta name="description" content="<?= $cleanDesc ?>">
+    <?php if ($keywords): ?>
+    <meta name="keywords" content="<?= $keywords ?>">
+    <?php endif; ?>
+    <meta name="robots" content="<?= htmlspecialchars($robotsDirective) ?>">
+    <meta name="googlebot" content="<?= htmlspecialchars($robotsDirective) ?>">
+    <link rel="canonical" href="<?= htmlspecialchars($finalCanonicalUrl) ?>">
 
-    <!-- Base URL for Clean Routing (/university/, /college/, /institute/) -->
+    <!-- Search Engine Verification -->
+    <?php if (!empty($seoSettings['google_site_verification'])): ?>
+    <meta name="google-site-verification" content="<?= htmlspecialchars($seoSettings['google_site_verification']) ?>">
+    <?php endif; ?>
+    <?php if (!empty($seoSettings['bing_site_verification'])): ?>
+    <meta name="msvalidate.01" content="<?= htmlspecialchars($seoSettings['bing_site_verification']) ?>">
+    <?php endif; ?>
+
+    <!-- Geographic & Regional Targeting (India) -->
+    <meta name="geo.region" content="IN">
+    <meta name="geo.placename" content="India">
+    <meta name="language" content="English, Hindi">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="<?= htmlspecialchars($ogType) ?>">
+    <meta property="og:url" content="<?= htmlspecialchars($finalCanonicalUrl) ?>">
+    <meta property="og:title" content="<?= $cleanTitle ?>">
+    <meta property="og:description" content="<?= $cleanDesc ?>">
+    <meta property="og:image" content="<?= htmlspecialchars($ogImage) ?>">
+    <meta property="og:site_name" content="<?= htmlspecialchars($seoSettings['site_name']) ?>">
+    <meta property="og:locale" content="en_IN">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="<?= htmlspecialchars($finalCanonicalUrl) ?>">
+    <meta name="twitter:title" content="<?= $cleanTitle ?>">
+    <meta name="twitter:description" content="<?= $cleanDesc ?>">
+    <meta name="twitter:image" content="<?= htmlspecialchars($ogImage) ?>">
+
+    <!-- Base URL for Clean Routing (/university/, /college/, /institute/, /school/, /law-college/) -->
     <?php
     $scriptDir = dirname($_SERVER['SCRIPT_NAME'] ?? '/');
     $scriptDir = str_replace('\\', '/', $scriptDir);
@@ -41,6 +91,27 @@ if (!isset($pageDesc)) {
 
     <!-- Pure CSS Style -->
     <link rel="stylesheet" href="assets/css/style.css">
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    <?= json_encode(getGlobalSchemaJsonLd(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
+    </script>
+    <?php if (isset($pageJsonLd) && !empty($pageJsonLd)): ?>
+    <script type="application/ld+json">
+    <?= json_encode($pageJsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
+    </script>
+    <?php endif; ?>
+
+    <?php if (!empty($seoSettings['google_analytics_id'])): ?>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?= htmlspecialchars($seoSettings['google_analytics_id']) ?>"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '<?= htmlspecialchars($seoSettings['google_analytics_id']) ?>');
+    </script>
+    <?php endif; ?>
 </head>
 <body>
 

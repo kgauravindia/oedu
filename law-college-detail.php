@@ -34,13 +34,15 @@ try {
 }
 
 if (empty($coursesList)) {
-    $pageTitle = 'Law College Not Found | Online Education';
+    http_response_code(404);
+    $pageRobots = 'noindex, nofollow';
+    $pageTitle = 'Law College Not Found (404) | Online Education';
     require_once __DIR__ . '/includes/header.php';
     echo '<div style="background:#FFF; padding:48px 16px; text-align:center; border:1px solid #E5E7EB; border-radius:12px; margin:40px auto; max-width:600px;">';
     echo '<div style="font-size:3rem; margin-bottom:12px;">⚖️</div>';
     echo '<h2 style="color:#111827; font-weight:800;">Law College Not Found</h2>';
     echo '<p style="color:#6B7280; margin:8px 0 20px;">The requested law college profile could not be located in the national BCI directory.</p>';
-    echo '<a href="/law-college.php" class="btn btn-primary">Browse All Law Colleges</a>';
+    echo '<a href="law-college.php" class="btn btn-primary">Browse All Law Colleges</a>';
     echo '</div>';
     require_once __DIR__ . '/includes/footer.php';
     exit;
@@ -51,6 +53,15 @@ $collegeName = $college['name'];
 $state = $college['state'];
 $university = $college['affiliating_university'];
 $slug = $college['slug'];
+
+// 301 Redirect to clean URL if accessed directly via law-college-detail.php
+if (!empty($slug) && isset($_SERVER['REQUEST_URI']) && str_contains($_SERVER['REQUEST_URI'], 'law-college-detail.php')) {
+    header("Location: law-college/" . urlencode($slug), true, 301);
+    exit;
+}
+
+// Canonical URL
+$canonicalUrl = "https://oedu.in/law-college/" . urlencode($slug);
 
 // Find establishment year across courses
 $estYear = '';
@@ -74,25 +85,57 @@ if (empty($relatedColleges) && !empty($state)) {
     $relatedColleges = $relStmt->fetchAll();
 }
 
-$pageTitle = htmlspecialchars($collegeName) . " — Courses, BCI Approval & Intake | Online Education";
-$pageDesc = htmlspecialchars($collegeName) . " in {$state}. Affiliated with " . htmlspecialchars($university) . ". View BCI approved law courses (3-Yr LL.B, 5-Yr BA LL.B), sanctioned intake seats, and affiliation validity.";
+$pageTitle = "{$collegeName} — BCI Approved Law Courses & Intake | Online Education";
+$pageDesc = "{$collegeName} in {$state}. Affiliated with {$university}. View BCI approved law courses (3-Yr LL.B, 5-Yr BA LL.B), sanctioned intake seats, and affiliation validity.";
+
+// Rich Schema.org Structured Data
+$pageJsonLd = [
+    "@context" => "https://schema.org",
+    "@graph" => [
+        array_filter([
+            "@type" => "EducationalOrganization",
+            "@id" => $canonicalUrl . "#institution",
+            "name" => $collegeName,
+            "url" => $canonicalUrl,
+            "description" => $pageDesc,
+            "parentOrganization" => !empty($university) ? [
+                "@type" => "CollegeOrUniversity",
+                "name" => $university
+            ] : null,
+            "address" => [
+                "@type" => "PostalAddress",
+                "addressRegion" => $state,
+                "addressCountry" => "IN"
+            ]
+        ]),
+        [
+            "@type" => "BreadcrumbList",
+            "itemListElement" => [
+                [
+                    "@type" => "ListItem",
+                    "position" => 1,
+                    "name" => "Home",
+                    "item" => "https://oedu.in/"
+                ],
+                [
+                    "@type" => "ListItem",
+                    "position" => 2,
+                    "name" => "Law Colleges",
+                    "item" => "https://oedu.in/law-college.php"
+                ],
+                [
+                    "@type" => "ListItem",
+                    "position" => 3,
+                    "name" => $collegeName,
+                    "item" => $canonicalUrl
+                ]
+            ]
+        ]
+    ]
+];
+
 require_once __DIR__ . '/includes/header.php';
 ?>
-
-<!-- Schema.org EducationalOrganization -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "EducationalOrganization",
-  "name": <?= json_encode($collegeName) ?>,
-  "description": <?= json_encode($pageDesc) ?>,
-  "address": {
-    "@type": "PostalAddress",
-    "addressRegion": <?= json_encode($state) ?>,
-    "addressCountry": "IN"
-  }
-}
-</script>
 
 <!-- Breadcrumb -->
 <div style="font-size: 0.8rem; color: #64748B; margin-bottom: 16px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">

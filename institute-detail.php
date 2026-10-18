@@ -25,7 +25,9 @@ if ($slug) {
 $inst = $stmt->fetch();
 
 if (!$inst) {
-    $pageTitle = 'Institute Not Found | Online Education';
+    http_response_code(404);
+    $pageRobots = 'noindex, nofollow';
+    $pageTitle = 'Institute Not Found (404) | Online Education';
     require_once __DIR__ . '/includes/header.php';
     echo '<div style="background:#FFF; padding:48px 16px; text-align:center; border:1px solid #E5E7EB; border-radius:12px; margin:40px auto; max-width:600px;">';
     echo '<h2 style="color:#111827; font-weight:800;">Institute Not Found</h2>';
@@ -35,6 +37,16 @@ if (!$inst) {
     require_once __DIR__ . '/includes/footer.php';
     exit;
 }
+
+// 301 Redirect to clean URL if accessed directly via institute-detail.php
+if (!empty($inst['slug']) && isset($_SERVER['REQUEST_URI']) && str_contains($_SERVER['REQUEST_URI'], 'institute-detail.php')) {
+    header("Location: institute/" . urlencode($inst['slug']), true, 301);
+    exit;
+}
+
+// Canonical URL
+$canonicalSlug = !empty($inst['slug']) ? urlencode($inst['slug']) : ('i-' . $inst['id']);
+$canonicalUrl = "https://oedu.in/institute/{$canonicalSlug}";
 
 // Fetch other institutes under the same type or district
 $relatedInstitutes = [];
@@ -65,8 +77,54 @@ $mgmtColor = $isGovt ? '#166534' : '#1E40AF';
 $mgmtBg = $isGovt ? '#F0FDF4' : '#EFF6FF';
 $mgmtBorder = $isGovt ? '#BBF7D0' : '#BFDBFE';
 
-$pageTitle = htmlspecialchars($inst['name']) . " ({$inst['aishe_code']}) | Standalone Institute Portal — Online Education";
-$pageDesc = htmlspecialchars($inst['name']) . " in {$inst['district']}, {$inst['state']}. AISHE Code: {$inst['aishe_code']}. Category: {$inst['institute_type']}.";
+$typeLabel = $inst['institute_type'] ? "{$inst['institute_type']}" : "Standalone Institute";
+$pageTitle = "{$inst['name']} ({$inst['aishe_code']}) — {$typeLabel} | Online Education";
+$pageDesc = "{$inst['name']} in {$inst['district']}, {$inst['state']}. AISHE Code: {$inst['aishe_code']}. Category: {$inst['institute_type']}. Verified AISHE institutional profile.";
+
+// Rich Schema.org Structured Data
+$pageJsonLd = [
+    "@context" => "https://schema.org",
+    "@graph" => [
+        array_filter([
+            "@type" => "EducationalOrganization",
+            "@id" => $canonicalUrl . "#institution",
+            "name" => $inst['name'],
+            "url" => $canonicalUrl,
+            "description" => $pageDesc,
+            "identifier" => $inst['aishe_code'],
+            "address" => [
+                "@type" => "PostalAddress",
+                "addressLocality" => $inst['district'] ?? '',
+                "addressRegion" => $inst['state'] ?? '',
+                "addressCountry" => "IN"
+            ]
+        ]),
+        [
+            "@type" => "BreadcrumbList",
+            "itemListElement" => [
+                [
+                    "@type" => "ListItem",
+                    "position" => 1,
+                    "name" => "Home",
+                    "item" => "https://oedu.in/"
+                ],
+                [
+                    "@type" => "ListItem",
+                    "position" => 2,
+                    "name" => "Institutes",
+                    "item" => "https://oedu.in/institute.php"
+                ],
+                [
+                    "@type" => "ListItem",
+                    "position" => 3,
+                    "name" => $inst['name'],
+                    "item" => $canonicalUrl
+                ]
+            ]
+        ]
+    ]
+];
+
 require_once __DIR__ . '/includes/header.php';
 ?>
 

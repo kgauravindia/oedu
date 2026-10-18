@@ -19,12 +19,17 @@ $pdo->exec("
 $defaultSettings = [
     'site_name' => 'Online Education',
     'site_tagline' => 'National Higher Education & Institutional Directory',
+    'site_url' => 'https://oedu.in',
     'contact_email' => 'contact@oedu.in',
     'contact_phone' => '+91 98765 43210',
     'whatsapp_number' => '+919876543210',
     'facebook_url' => 'https://www.facebook.com/oeduin',
     'enable_inquiries' => '1',
-    'meta_description' => 'Comprehensive national database of Universities, Colleges, and Standalone Institutions of India.'
+    'meta_description' => 'Comprehensive national database of Universities, Colleges, Standalone Institutions, CBSE Schools, and BCI Law Colleges of India.',
+    'seo_keywords' => 'Universities in India, AISHE Colleges, CBSE Schools, BCI Law Colleges, Standalone Institutes, Entrance Exams, CUET Cutoff, NIRF Ranking, Higher Education India',
+    'google_site_verification' => '',
+    'bing_site_verification' => '',
+    'google_analytics_id' => '',
 ];
 
 // Handle Save
@@ -131,6 +136,42 @@ $settings = array_merge($defaultSettings, $dbSettings);
                                         <option value="1" <?= $settings['enable_inquiries'] === '1' ? 'selected' : '' ?>>Enabled (Accept Public Leads)</option>
                                         <option value="0" <?= $settings['enable_inquiries'] === '0' ? 'selected' : '' ?>>Disabled</option>
                                     </select>
+                                </div>
+                            <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom">
+                                <i class="fas fa-search-location text-success me-2"></i> SEO, Google Search Console &amp; Verification
+                            </h6>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-12">
+                                    <label class="form-label small fw-bold text-dark">Canonical Domain URL</label>
+                                    <input type="url" name="site_url" class="form-control font-monospace" value="<?= htmlspecialchars($settings['site_url'] ?? 'https://oedu.in') ?>" placeholder="https://oedu.in" required>
+                                    <small class="text-muted">Master canonical domain used for XML sitemaps, canonical links, and search indexing.</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-dark">
+                                        Google Search Console Verification Token
+                                        <a href="https://search.google.com/search-console" target="_blank" class="small ms-1 text-decoration-none">Open GSC ↗</a>
+                                    </label>
+                                    <input type="text" name="google_site_verification" class="form-control font-monospace" value="<?= htmlspecialchars($settings['google_site_verification'] ?? '') ?>" placeholder="e.g. AbCdEfGhIjKlMnOpQrStUvWxYz0123456789">
+                                    <small class="text-muted">Value from <code>&lt;meta name="google-site-verification" content="..."&gt;</code>.</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-dark">
+                                        Bing Webmaster Verification Code
+                                        <a href="https://www.bing.com/webmasters" target="_blank" class="small ms-1 text-decoration-none">Open Bing ↗</a>
+                                    </label>
+                                    <input type="text" name="bing_site_verification" class="form-control font-monospace" value="<?= htmlspecialchars($settings['bing_site_verification'] ?? '') ?>" placeholder="e.g. 1234567890ABCDEF1234567890ABCDEF">
+                                    <small class="text-muted">Value from <code>&lt;meta name="msvalidate.01" content="..."&gt;</code>.</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-dark">Google Analytics 4 Measurement ID</label>
+                                    <input type="text" name="google_analytics_id" class="form-control font-monospace" value="<?= htmlspecialchars($settings['google_analytics_id'] ?? '') ?>" placeholder="G-XXXXXXXXXX">
+                                    <small class="text-muted">Optional: GA4 measurement tag to track live organic search traffic.</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-dark">Default Educational SEO Keywords</label>
+                                    <input type="text" name="seo_keywords" class="form-control" value="<?= htmlspecialchars($settings['seo_keywords'] ?? '') ?>" placeholder="colleges, universities, schools, etc.">
+                                    <small class="text-muted">Comma-separated keywords for meta tags.</small>
                                 </div>
                             </div>
 

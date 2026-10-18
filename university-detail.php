@@ -43,7 +43,9 @@ if (!$univ) {
         exit;
     }
 
-    $pageTitle = 'University Not Found | Online Education';
+    http_response_code(404);
+    $pageRobots = 'noindex, nofollow';
+    $pageTitle = 'University Not Found (404) | Online Education';
     require_once __DIR__ . '/includes/header.php';
     echo '<div style="background:#FFF; padding:48px 16px; text-align:center; border:1px solid #E5E7EB; border-radius:12px; margin:40px auto; max-width:600px;">';
     echo '<h2 style="color:#111827; font-weight:800;">University Not Found</h2>';
@@ -54,8 +56,65 @@ if (!$univ) {
     exit;
 }
 
-$pageTitle = htmlspecialchars($univ['name']) . " ({$univ['aishe_code']}) | National University Portal — Online Education";
-$pageDesc = htmlspecialchars($univ['name']) . " in {$univ['district']}, {$univ['state']}. AISHE Code: {$univ['aishe_code']}. Established in {$univ['year_of_establishment']}.";
+// 301 Redirect to clean URL if accessed directly via university-detail.php
+if (!empty($univ['slug']) && isset($_SERVER['REQUEST_URI']) && str_contains($_SERVER['REQUEST_URI'], 'university-detail.php')) {
+    header("Location: university/" . urlencode($univ['slug']), true, 301);
+    exit;
+}
+
+// Canonical URL
+$canonicalSlug = !empty($univ['slug']) ? urlencode($univ['slug']) : ('u-' . $univ['id']);
+$canonicalUrl = "https://oedu.in/university/{$canonicalSlug}";
+
+$pageTitle = "{$univ['name']} ({$univ['aishe_code']}) — Ranking, Admissions & AISHE Profile | Online Education";
+$pageDesc = "{$univ['name']} in {$univ['district']}, {$univ['state']}. AISHE Code: {$univ['aishe_code']}. Established in {$univ['year_of_establishment']}. Official national directory profile with NIRF and UGC recognition details.";
+
+// Rich Schema.org Structured Data
+$pageJsonLd = [
+    "@context" => "https://schema.org",
+    "@graph" => [
+        array_filter([
+            "@type" => "CollegeOrUniversity",
+            "@id" => $canonicalUrl . "#institution",
+            "name" => $univ['name'],
+            "url" => $canonicalUrl,
+            "description" => $pageDesc,
+            "identifier" => $univ['aishe_code'],
+            "foundingDate" => !empty($univ['year_of_establishment']) ? (string)$univ['year_of_establishment'] : null,
+            "sameAs" => !empty($univ['website']) ? $univ['website'] : null,
+            "address" => [
+                "@type" => "PostalAddress",
+                "addressLocality" => $univ['district'] ?? '',
+                "addressRegion" => $univ['state'] ?? '',
+                "addressCountry" => "IN"
+            ]
+        ]),
+        [
+            "@type" => "BreadcrumbList",
+            "itemListElement" => [
+                [
+                    "@type" => "ListItem",
+                    "position" => 1,
+                    "name" => "Home",
+                    "item" => "https://oedu.in/"
+                ],
+                [
+                    "@type" => "ListItem",
+                    "position" => 2,
+                    "name" => "Universities",
+                    "item" => "https://oedu.in/institution.php"
+                ],
+                [
+                    "@type" => "ListItem",
+                    "position" => 3,
+                    "name" => $univ['name'],
+                    "item" => $canonicalUrl
+                ]
+            ]
+        ]
+    ]
+];
+
 require_once __DIR__ . '/includes/header.php';
 ?>
 

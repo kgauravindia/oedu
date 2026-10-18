@@ -47,7 +47,9 @@ if ($slug) {
 }
 
 if (!$school) {
-    $pageTitle = 'CBSE School Not Found | Online Education';
+    http_response_code(404);
+    $pageRobots = 'noindex, nofollow';
+    $pageTitle = 'CBSE School Not Found (404) | Online Education';
     require_once __DIR__ . '/includes/header.php';
     echo '<div style="background:#FFF; padding:48px 16px; text-align:center; border:1px solid #E5E7EB; border-radius:12px; margin:40px auto; max-width:600px;">';
     echo '<div style="font-size: 3rem; margin-bottom: 12px;">🏫</div>';
@@ -58,6 +60,16 @@ if (!$school) {
     require_once __DIR__ . '/includes/footer.php';
     exit;
 }
+
+// 301 Redirect to clean URL if accessed directly via school-detail.php
+if (!empty($school['slug']) && isset($_SERVER['REQUEST_URI']) && str_contains($_SERVER['REQUEST_URI'], 'school-detail.php')) {
+    header("Location: school/" . urlencode($school['slug']), true, 301);
+    exit;
+}
+
+// Canonical URL
+$canonicalSlug = !empty($school['slug']) ? urlencode($school['slug']) : ('s-' . $school['id']);
+$canonicalUrl = "https://oedu.in/school/{$canonicalSlug}";
 
 // Fetch nearby / other schools in same district
 $nearbyStmt = $pdo->prepare("
@@ -74,8 +86,55 @@ $nearbyStmt->execute([
 ]);
 $nearbySchools = $nearbyStmt->fetchAll(PDO::FETCH_ASSOC);
 
-$pageTitle = htmlspecialchars($school['name']) . " (Aff: " . htmlspecialchars($school['affiliation_no']) . ") — CBSE School Profile | Online Education";
-$pageDesc = htmlspecialchars($school['name']) . " in " . htmlspecialchars($school['district']) . ", " . htmlspecialchars($school['state']) . ". Affiliation No: " . htmlspecialchars($school['affiliation_no']) . ", School Code: " . htmlspecialchars($school['school_code']) . ".";
+$pageTitle = "{$school['name']} (CBSE Affiliation: {$school['affiliation_no']}) — Admissions & Details | Online Education";
+$pageDesc = "{$school['name']} in {$school['district']}, {$school['state']}. CBSE Affiliation No: {$school['affiliation_no']}, School Code: {$school['school_code']}, UDISE: {$school['udise_code']}. Comprehensive verified school profile.";
+
+// Rich Schema.org Structured Data
+$pageJsonLd = [
+    "@context" => "https://schema.org",
+    "@graph" => [
+        array_filter([
+            "@type" => "School",
+            "@id" => $canonicalUrl . "#institution",
+            "name" => $school['name'],
+            "url" => $canonicalUrl,
+            "description" => $pageDesc,
+            "identifier" => $school['affiliation_no'],
+            "address" => [
+                "@type" => "PostalAddress",
+                "streetAddress" => $school['address'] ?? '',
+                "addressLocality" => $school['district'] ?? '',
+                "addressRegion" => $school['state'] ?? '',
+                "postalCode" => $school['pincode'] ?? '',
+                "addressCountry" => "IN"
+            ]
+        ]),
+        [
+            "@type" => "BreadcrumbList",
+            "itemListElement" => [
+                [
+                    "@type" => "ListItem",
+                    "position" => 1,
+                    "name" => "Home",
+                    "item" => "https://oedu.in/"
+                ],
+                [
+                    "@type" => "ListItem",
+                    "position" => 2,
+                    "name" => "CBSE Schools",
+                    "item" => "https://oedu.in/school.php"
+                ],
+                [
+                    "@type" => "ListItem",
+                    "position" => 3,
+                    "name" => $school['name'],
+                    "item" => $canonicalUrl
+                ]
+            ]
+        ]
+    ]
+];
+
 require_once __DIR__ . '/includes/header.php';
 ?>
 
