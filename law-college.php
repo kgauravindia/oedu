@@ -3,13 +3,34 @@
 // Sourced from Bar Council of India (BCI) Statutory Law Directory (3,170+ Law Colleges & 5,470+ Approved Programs)
 require_once __DIR__ . '/includes/db.php';
 
-// 1. Fetch distinct States from `law_college` table
-$statesStmt = $pdo->query("SELECT DISTINCT state FROM `law_college` WHERE state IS NOT NULL AND state != '' AND status = 'ACTIVE' ORDER BY state ASC");
-$allStates = $statesStmt->fetchAll(PDO::FETCH_COLUMN);
+$allStates = [];
+$allUniversities = [];
+$lawColleges = [];
+$totalRecords = 0;
+$totalPages = 1;
+$totalCollegesOverall = 3172;
+$totalProgramsOverall = 5470;
+$totalStatesOverall = 31;
 
-// 2. Fetch distinct top universities for filter dropdown
-$univStmt = $pdo->query("SELECT DISTINCT affiliating_university FROM `law_college` WHERE affiliating_university IS NOT NULL AND affiliating_university != '' AND status = 'ACTIVE' ORDER BY affiliating_university ASC LIMIT 250");
-$allUniversities = $univStmt->fetchAll(PDO::FETCH_COLUMN);
+// 1. Safe Schema Auto-Sync
+try {
+    $colCheck = $pdo->query("SHOW COLUMNS FROM `law_college` LIKE 'slug'");
+    if ($colCheck->rowCount() === 0) {
+        $sqlFile = __DIR__ . '/law_college.sql';
+        if (file_exists($sqlFile)) {
+            $pdo->exec(file_get_contents($sqlFile));
+        }
+    }
+} catch (Throwable $e) {}
+
+// 2. Fetch States & Universities
+try {
+    $statesStmt = $pdo->query("SELECT DISTINCT state FROM `law_college` WHERE state IS NOT NULL AND state != '' AND status = 'ACTIVE' ORDER BY state ASC");
+    $allStates = $statesStmt->fetchAll(PDO::FETCH_COLUMN);
+
+    $univStmt = $pdo->query("SELECT DISTINCT affiliating_university FROM `law_college` WHERE affiliating_university IS NOT NULL AND affiliating_university != '' AND status = 'ACTIVE' ORDER BY affiliating_university ASC LIMIT 250");
+    $allUniversities = $univStmt->fetchAll(PDO::FETCH_COLUMN);
+} catch (Throwable $e) {}
 
 // 3. Filter Inputs
 $selectedState = trim($_GET['state'] ?? '');
@@ -21,75 +42,77 @@ $perPage = 24;
 $offset = ($page - 1) * $perPage;
 
 // 4. Build Query Conditions
-$where = ["status = 'ACTIVE'"];
-$params = [];
+try {
+    $where = ["status = 'ACTIVE'"];
+    $params = [];
 
-if ($selectedState) {
-    $where[] = "state = :state";
-    $params[':state'] = $selectedState;
-}
-
-if ($selectedUniv) {
-    $where[] = "affiliating_university = :univ";
-    $params[':univ'] = $selectedUniv;
-}
-
-if ($selectedCourse) {
-    if ($selectedCourse === '3-llb') {
-        $where[] = "(course_name LIKE '%3%year%' OR course_name LIKE '%3%yr%' OR course_name LIKE '%three%year%')";
-    } elseif ($selectedCourse === '5-ballb') {
-        $where[] = "(course_name LIKE '%BA%LL%' OR course_name LIKE '%B.A%LL%')";
-    } elseif ($selectedCourse === '5-bballb') {
-        $where[] = "(course_name LIKE '%BBA%LL%' OR course_name LIKE '%B.B.A%LL%')";
-    } elseif ($selectedCourse === '5-bcomllb') {
-        $where[] = "(course_name LIKE '%B.Com%LL%' OR course_name LIKE '%BCom%LL%')";
-    } elseif ($selectedCourse === 'llm') {
-        $where[] = "(course_name LIKE '%LL.M%' OR course_name LIKE '%LLM%')";
-    } else {
-        $where[] = "course_name LIKE :course_kw";
-        $params[':course_kw'] = "%{$selectedCourse}%";
+    if ($selectedState) {
+        $where[] = "state = :state";
+        $params[':state'] = $selectedState;
     }
-}
 
-if ($search) {
-    $where[] = "(name LIKE :q OR affiliating_university LIKE :q OR state LIKE :q OR course_name LIKE :q)";
-    $params[':q'] = "%{$search}%";
-}
+    if ($selectedUniv) {
+        $where[] = "affiliating_university = :univ";
+        $params[':univ'] = $selectedUniv;
+    }
 
-$whereSql = implode(' AND ', $where);
+    if ($selectedCourse) {
+        if ($selectedCourse === '3-llb') {
+            $where[] = "(course_name LIKE '%3%year%' OR course_name LIKE '%3%yr%' OR course_name LIKE '%three%year%')";
+        } elseif ($selectedCourse === '5-ballb') {
+            $where[] = "(course_name LIKE '%BA%LL%' OR course_name LIKE '%B.A%LL%')";
+        } elseif ($selectedCourse === '5-bballb') {
+            $where[] = "(course_name LIKE '%BBA%LL%' OR course_name LIKE '%B.B.A%LL%')";
+        } elseif ($selectedCourse === '5-bcomllb') {
+            $where[] = "(course_name LIKE '%B.Com%LL%' OR course_name LIKE '%BCom%LL%')";
+        } elseif ($selectedCourse === 'llm') {
+            $where[] = "(course_name LIKE '%LL.M%' OR course_name LIKE '%LLM%')";
+        } else {
+            $where[] = "course_name LIKE :course_kw";
+            $params[':course_kw'] = "%{$selectedCourse}%";
+        }
+    }
 
-// Count Total Distinct Colleges
-$countSql = "SELECT COUNT(DISTINCT slug) FROM `law_college` WHERE {$whereSql}";
-$countStmt = $pdo->prepare($countSql);
-$countStmt->execute($params);
-$totalRecords = (int)$countStmt->fetchColumn();
-$totalPages = max(1, (int)ceil($totalRecords / $perPage));
+    if ($search) {
+        $where[] = "(name LIKE :q OR affiliating_university LIKE :q OR state LIKE :q OR course_name LIKE :q)";
+        $params[':q'] = "%{$search}%";
+    }
 
-// Fetch Paginated Distinct Colleges
-$sql = "SELECT 
-    slug,
-    name,
-    state,
-    affiliating_university,
-    MIN(NULLIF(e_year, '')) as est_year,
-    COUNT(*) as total_courses,
-    GROUP_CONCAT(course_name SEPARATOR ' || ') as courses_list,
-    GROUP_CONCAT(approval_till SEPARATOR ' || ') as approvals_list,
-    MAX(approval_till) as latest_approval
-FROM `law_college` 
-WHERE {$whereSql} 
-GROUP BY slug, name, state, affiliating_university 
-ORDER BY state ASC, name ASC 
-LIMIT {$perPage} OFFSET {$offset}";
+    $whereSql = implode(' AND ', $where);
 
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$lawColleges = $stmt->fetchAll();
+    // Count Total Distinct Colleges
+    $countSql = "SELECT COUNT(DISTINCT slug) FROM `law_college` WHERE {$whereSql}";
+    $countStmt = $pdo->prepare($countSql);
+    $countStmt->execute($params);
+    $totalRecords = (int)$countStmt->fetchColumn();
+    $totalPages = max(1, (int)ceil($totalRecords / $perPage));
 
-// Overall Stats for banners
-$totalCollegesOverall = (int)$pdo->query("SELECT COUNT(DISTINCT slug) FROM `law_college` WHERE status = 'ACTIVE'")->fetchColumn();
-$totalProgramsOverall = (int)$pdo->query("SELECT COUNT(*) FROM `law_college` WHERE status = 'ACTIVE'")->fetchColumn();
-$totalStatesOverall = (int)$pdo->query("SELECT COUNT(DISTINCT state) FROM `law_college` WHERE state IS NOT NULL AND state != '' AND status = 'ACTIVE'")->fetchColumn();
+    // Fetch Paginated Distinct Colleges
+    $sql = "SELECT 
+        slug,
+        name,
+        state,
+        affiliating_university,
+        MIN(NULLIF(e_year, '')) as est_year,
+        COUNT(*) as total_courses,
+        GROUP_CONCAT(course_name SEPARATOR ' || ') as courses_list,
+        GROUP_CONCAT(approval_till SEPARATOR ' || ') as approvals_list,
+        MAX(approval_till) as latest_approval
+    FROM `law_college` 
+    WHERE {$whereSql} 
+    GROUP BY slug, name, state, affiliating_university 
+    ORDER BY state ASC, name ASC 
+    LIMIT {$perPage} OFFSET {$offset}";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $lawColleges = $stmt->fetchAll();
+
+    // Overall Stats for banners
+    $totalCollegesOverall = (int)$pdo->query("SELECT COUNT(DISTINCT slug) FROM `law_college` WHERE status = 'ACTIVE'")->fetchColumn();
+    $totalProgramsOverall = (int)$pdo->query("SELECT COUNT(*) FROM `law_college` WHERE status = 'ACTIVE'")->fetchColumn();
+    $totalStatesOverall = (int)$pdo->query("SELECT COUNT(DISTINCT state) FROM `law_college` WHERE state IS NOT NULL AND state != '' AND status = 'ACTIVE'")->fetchColumn();
+} catch (Throwable $e) {}
 
 $pageTitle = 'Law Colleges in India — BCI Approved Law College Directory (3,170+) | Online Education';
 $pageDesc = "Explore {$totalCollegesOverall}+ Bar Council of India (BCI) recognized Law Colleges across {$totalStatesOverall} States & UTs. Compare 3-Year LL.B, 5-Year Integrated BA LL.B, BBA LL.B courses, intake seats, and affiliation.";

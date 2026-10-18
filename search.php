@@ -129,36 +129,40 @@ if ($isSearchApplied) {
 
     // 3b. BCI Approved Law Colleges
     if (in_array($type, ['all', 'law', 'law_colleges', 'colleges', 'institutions'])) {
-        $sql = "SELECT 
-            slug,
-            name,
-            state,
-            affiliating_university,
-            MIN(NULLIF(e_year, '')) as est_year,
-            COUNT(*) as total_courses,
-            GROUP_CONCAT(course_name SEPARATOR ' || ') as courses_list,
-            MAX(approval_till) as latest_approval
-        FROM law_college 
-        WHERE status = 'ACTIVE'";
-        $params = [];
-        if ($query !== '') {
-            $sql .= " AND (name LIKE ? OR affiliating_university LIKE ? OR course_name LIKE ? OR state LIKE ?)";
-            $params = array_merge($params, [$searchWildcard, $searchWildcard, $searchWildcard, $searchWildcard]);
+        try {
+            $sql = "SELECT 
+                slug,
+                name,
+                state,
+                affiliating_university,
+                MIN(NULLIF(e_year, '')) as est_year,
+                COUNT(*) as total_courses,
+                GROUP_CONCAT(course_name SEPARATOR ' || ') as courses_list,
+                MAX(approval_till) as latest_approval
+            FROM law_college 
+            WHERE status = 'ACTIVE'";
+            $params = [];
+            if ($query !== '') {
+                $sql .= " AND (name LIKE ? OR affiliating_university LIKE ? OR course_name LIKE ? OR state LIKE ?)";
+                $params = array_merge($params, [$searchWildcard, $searchWildcard, $searchWildcard, $searchWildcard]);
+            }
+            if ($state !== '') {
+                $sql .= " AND state = ?";
+                $params[] = $state;
+            }
+            $sql .= " GROUP BY slug, name, state, affiliating_university";
+            if ($query !== '') {
+                $sql .= " ORDER BY (CASE WHEN name LIKE ? THEN 1 ELSE 2 END), name ASC LIMIT {$limit}";
+                $params[] = "{$query}%";
+            } else {
+                $sql .= " ORDER BY name ASC LIMIT {$limit}";
+            }
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            $lawCollegesList = $stmt->fetchAll();
+        } catch (Throwable $e) {
+            $lawCollegesList = [];
         }
-        if ($state !== '') {
-            $sql .= " AND state = ?";
-            $params[] = $state;
-        }
-        $sql .= " GROUP BY slug, name, state, affiliating_university";
-        if ($query !== '') {
-            $sql .= " ORDER BY (CASE WHEN name LIKE ? THEN 1 ELSE 2 END), name ASC LIMIT {$limit}";
-            $params[] = "{$query}%";
-        } else {
-            $sql .= " ORDER BY name ASC LIMIT {$limit}";
-        }
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        $lawCollegesList = $stmt->fetchAll();
     }
 
     // 4. Standalone Institutes (AISHE Directory - 17,000+ Institutes)

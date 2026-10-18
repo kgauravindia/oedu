@@ -4,6 +4,7 @@
 
 # 1. Database Dumps & SQLite Files (SENSITIVE)
 *.sql
+!law_college.sql
 *.sqlite
 schema.sql
 public/schema.sql

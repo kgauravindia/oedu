@@ -10,24 +10,28 @@ if (!$slug && !$id) {
     exit;
 }
 
-if ($slug) {
-    $stmt = $pdo->prepare("SELECT * FROM `law_college` WHERE slug = :slug ORDER BY id ASC");
-    $stmt->execute([':slug' => $slug]);
-} else {
-    // If by ID, find its slug first to show full courses of that college
-    $idStmt = $pdo->prepare("SELECT slug FROM `law_college` WHERE id = :id LIMIT 1");
-    $idStmt->execute([':id' => $id]);
-    $foundSlug = $idStmt->fetchColumn();
-    if ($foundSlug) {
+$coursesList = [];
+try {
+    if ($slug) {
         $stmt = $pdo->prepare("SELECT * FROM `law_college` WHERE slug = :slug ORDER BY id ASC");
-        $stmt->execute([':slug' => $foundSlug]);
+        $stmt->execute([':slug' => $slug]);
     } else {
-        $stmt = $pdo->prepare("SELECT * FROM `law_college` WHERE id = :id");
-        $stmt->execute([':id' => $id]);
+        // If by ID, find its slug first to show full courses of that college
+        $idStmt = $pdo->prepare("SELECT slug FROM `law_college` WHERE id = :id LIMIT 1");
+        $idStmt->execute([':id' => $id]);
+        $foundSlug = $idStmt->fetchColumn();
+        if ($foundSlug) {
+            $stmt = $pdo->prepare("SELECT * FROM `law_college` WHERE slug = :slug ORDER BY id ASC");
+            $stmt->execute([':slug' => $foundSlug]);
+        } else {
+            $stmt = $pdo->prepare("SELECT * FROM `law_college` WHERE id = :id");
+            $stmt->execute([':id' => $id]);
+        }
     }
+    $coursesList = $stmt->fetchAll();
+} catch (Throwable $e) {
+    $coursesList = [];
 }
-
-$coursesList = $stmt->fetchAll();
 
 if (empty($coursesList)) {
     $pageTitle = 'Law College Not Found | Online Education';
