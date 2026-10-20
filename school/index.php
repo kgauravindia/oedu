@@ -1,7 +1,7 @@
 <?php
-// school.php — National CBSE School Directory of India (.php only)
+// school/index.php — National CBSE School Directory of India (.php only)
 // Data sourced from official CBSE Affiliation Registry (33,180+ CBSE Schools across India)
-require_once __DIR__ . '/includes/db.php';
+require_once dirname(__DIR__) . '/includes/db.php';
 
 // 1. Fetch distinct States from `school` table
 $statesStmt = $pdo->query("SELECT DISTINCT state FROM `school` WHERE state IS NOT NULL AND state != '' ORDER BY state ASC");
@@ -70,7 +70,7 @@ $totalStatesInIndia = count($allStates);
 
 $pageTitle = 'All CBSE Schools in India — National School Directory | Online Education';
 $pageDesc = 'Comprehensive national directory of 33,000+ CBSE affiliated schools across all 36 States & UTs of India. Search by Affiliation No, School Code, District & State.';
-require_once __DIR__ . '/includes/header.php';
+require_once dirname(__DIR__) . '/includes/header.php';
 ?>
 
 <div style="margin-bottom: 24px;">
@@ -96,7 +96,7 @@ require_once __DIR__ . '/includes/header.php';
 
 <!-- Search & Filter Form (Orange, Black, White - Mobile Friendly) -->
 <div style="background: #FFFFFF; border: 1.5px solid #111827; border-radius: var(--radius-md); padding: 18px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-    <form action="school.php" method="GET" class="filter-form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) 110px; gap: 12px; align-items: flex-end;">
+    <form action="school/" method="GET" class="filter-form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) 110px; gap: 12px; align-items: flex-end;">
         <div>
             <label style="font-size: 0.76rem; font-weight: 800; color: #111827; display: block; margin-bottom: 4px;">1. State / UT</label>
             <select name="state" onchange="this.form.submit()" style="width: 100%; height: 42px; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.88rem; background: #FFF; font-weight: 600;">
@@ -154,7 +154,7 @@ require_once __DIR__ . '/includes/header.php';
         (Page <?= $page ?> of <?= max(1, $totalPages) ?>)
     </div>
     <?php if ($selectedState || $selectedDistrict || $selectedStatus || $search): ?>
-        <a href="school.php" class="btn btn-outline" style="font-size: 0.78rem; padding: 5px 12px; border-color: #CBD5E1;">
+        <a href="school/" class="btn btn-outline" style="font-size: 0.78rem; padding: 5px 12px; border-color: #CBD5E1;">
             Clear All Filters ✕
         </a>
     <?php endif; ?>
@@ -167,7 +167,7 @@ require_once __DIR__ . '/includes/header.php';
             <div style="font-size: 2.4rem; margin-bottom: 8px;">🏫</div>
             <h3 style="font-size: 1.15rem; font-weight: 800; color: #111827; margin-bottom: 4px;">No CBSE Schools Found</h3>
             <p style="font-size: 0.88rem; color: #6B7280; margin-bottom: 16px;">Try adjusting your keyword or reset filters to browse all CBSE schools.</p>
-            <a href="school.php" class="btn btn-primary">Reset Filters</a>
+            <a href="school/" class="btn btn-primary">Reset Filters</a>
         </div>
     <?php else: ?>
         <?php foreach ($schools as $s): ?>
@@ -272,4 +272,4 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 <?php endif; ?>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once dirname(__DIR__) . '/includes/footer.php'; ?>

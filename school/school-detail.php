@@ -1,6 +1,6 @@
 <?php
 // school-detail.php — Dedicated Profile for CBSE School (.php only)
-require_once __DIR__ . '/includes/db.php';
+require_once dirname(__DIR__) . '/includes/db.php';
 
 $slug = trim($_GET['slug'] ?? '');
 $id = (int)($_GET['id'] ?? 0);
@@ -9,7 +9,7 @@ $schCode = trim($_GET['code'] ?? '');
 $udise = trim($_GET['udise'] ?? '');
 
 if (!$slug && !$id && !$affNo && !$schCode && !$udise) {
-    header("Location: school.php");
+    header("Location: index.php");
     exit;
 }
 
@@ -29,7 +29,7 @@ if ($slug) {
     $stmt->execute([':id' => $id]);
     $school = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($school && !empty($school['slug'])) {
-        header("Location: school/" . urlencode($school['slug']), true, 301);
+        header("Location: " . urlencode($school['slug']), true, 301);
         exit;
     }
 } elseif ($affNo) {
@@ -50,20 +50,20 @@ if (!$school) {
     http_response_code(404);
     $pageRobots = 'noindex, nofollow';
     $pageTitle = 'CBSE School Not Found (404) | Online Education';
-    require_once __DIR__ . '/includes/header.php';
+    require_once dirname(__DIR__) . '/includes/header.php';
     echo '<div style="background:#FFF; padding:48px 16px; text-align:center; border:1px solid #E5E7EB; border-radius:12px; margin:40px auto; max-width:600px;">';
     echo '<div style="font-size: 3rem; margin-bottom: 12px;">🏫</div>';
     echo '<h2 style="color:#111827; font-weight:800;">CBSE School Not Found</h2>';
     echo '<p style="color:#6B7280; margin:8px 0 20px;">The requested CBSE school profile could not be located in the national directory.</p>';
-    echo '<a href="school.php" class="btn btn-primary">Browse All CBSE Schools</a>';
+    echo '<a href="school/" class="btn btn-primary">Browse All CBSE Schools</a>';
     echo '</div>';
-    require_once __DIR__ . '/includes/footer.php';
+    require_once dirname(__DIR__) . '/includes/footer.php';
     exit;
 }
 
 // 301 Redirect to clean URL if accessed directly via school-detail.php
 if (!empty($school['slug']) && isset($_SERVER['REQUEST_URI']) && str_contains($_SERVER['REQUEST_URI'], 'school-detail.php')) {
-    header("Location: school/" . urlencode($school['slug']), true, 301);
+    header("Location: " . urlencode($school['slug']), true, 301);
     exit;
 }
 
@@ -122,7 +122,7 @@ $pageJsonLd = [
                     "@type" => "ListItem",
                     "position" => 2,
                     "name" => "CBSE Schools",
-                    "item" => "https://oedu.in/school.php"
+                    "item" => "https://oedu.in/school/"
                 ],
                 [
                     "@type" => "ListItem",
@@ -135,16 +135,16 @@ $pageJsonLd = [
     ]
 ];
 
-require_once __DIR__ . '/includes/header.php';
+require_once dirname(__DIR__) . '/includes/header.php';
 ?>
 
 <!-- Breadcrumbs -->
 <div style="font-size: 0.82rem; color: #6B7280; margin-bottom: 18px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
     <a href="index.php" style="color: #111827; font-weight: 700;">Home</a>
     <span>/</span>
-    <a href="school.php" style="color: #111827; font-weight: 700;">CBSE Schools</a>
+    <a href="school/" style="color: #111827; font-weight: 700;">CBSE Schools</a>
     <span>/</span>
-    <a href="school.php?state=<?= urlencode($school['state']) ?>" style="color: var(--orange-dark); font-weight: 700;"><?= htmlspecialchars($school['state']) ?></a>
+    <a href="school/?state=<?= urlencode($school['state']) ?>" style="color: var(--orange-dark); font-weight: 700;"><?= htmlspecialchars($school['state']) ?></a>
     <span>/</span>
     <span style="color: #111827;"><?= htmlspecialchars($school['name']) ?></span>
 </div>
@@ -374,4 +374,4 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 </div>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once dirname(__DIR__) . '/includes/footer.php'; ?>

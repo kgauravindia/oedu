@@ -71,11 +71,20 @@ $ogType = $pageOgType ?? 'website';
 
     <!-- Base URL for Clean Routing (/university/, /college/, /institute/, /school/, /law-college/) -->
     <?php
-    $scriptDir = dirname($_SERVER['SCRIPT_NAME'] ?? '/');
-    $scriptDir = str_replace('\\', '/', $scriptDir);
-    $appBasePath = rtrim($scriptDir, '/') . '/';
-    if ($appBasePath === '//') {
-        $appBasePath = '/';
+    if (!isset($appBasePath)) {
+        $projectRoot = str_replace('\\', '/', realpath(dirname(__DIR__)) ?: dirname(__DIR__));
+        $docRoot = !empty($_SERVER['DOCUMENT_ROOT']) ? str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT']) ?: $_SERVER['DOCUMENT_ROOT']) : '';
+        if ($docRoot && str_starts_with($projectRoot, $docRoot)) {
+            $rel = trim(substr($projectRoot, strlen($docRoot)), '/');
+            $appBasePath = $rel !== '' ? '/' . $rel . '/' : '/';
+        } else {
+            $scriptDir = dirname($_SERVER['SCRIPT_NAME'] ?? '/');
+            $scriptDir = str_replace('\\', '/', $scriptDir);
+            $appBasePath = rtrim($scriptDir, '/') . '/';
+        }
+        if ($appBasePath === '//' || $appBasePath === '') {
+            $appBasePath = '/';
+        }
     }
     ?>
     <base href="<?= htmlspecialchars($appBasePath) ?>">
@@ -129,7 +138,7 @@ $ogType = $pageOgType ?? 'website';
             
             <!-- Desktop Utility Links -->
             <div class="utility-links desktop-utility-links">
-                <a href="school.php">🏫 CBSE Schools (33K+)</a>
+                <a href="school/">🏫 CBSE Schools (33K+)</a>
                 <a href="syllabus.php">📖 Syllabus</a>
                 <a href="government.php">🏛️ UGC &amp; MoE Portals</a>
                 <a href="global.php">🌏 NRI Admissions</a>
@@ -173,7 +182,7 @@ $ogType = $pageOgType ?? 'website';
 
                 <!-- Desktop Action Links (Visible on >= 992px) -->
                 <div class="header-desktop-actions">
-                    <a href="school.php" class="btn btn-outline" style="font-size: 0.8rem;">
+                    <a href="school/" class="btn btn-outline" style="font-size: 0.8rem;">
                         🏫 Schools (33K+)
                     </a>
                     <a href="institution.php" class="btn btn-outline" style="font-size: 0.8rem;">
@@ -247,7 +256,7 @@ $ogType = $pageOgType ?? 'website';
                 <a href="index.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'index.php' && !isset($_GET['sub']) ? 'active' : '' ?>">
                     <span>🏠</span> Home
                 </a>
-                <a href="school.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'school.php' || basename($_SERVER['PHP_SELF']) == 'school-detail.php' ? 'active' : '' ?>">
+                <a href="school/" class="ribbon-item <?= (str_contains($_SERVER['SCRIPT_NAME'] ?? '', '/school/') || str_contains($_SERVER['REQUEST_URI'] ?? '', '/school') || basename($_SERVER['PHP_SELF']) == 'school.php' || basename($_SERVER['PHP_SELF']) == 'school-detail.php') ? 'active' : '' ?>">
                     <span>🏫</span> CBSE Schools <span class="ribbon-badge">33K+</span>
                 </a>
                 <a href="institution.php" class="ribbon-item <?= basename($_SERVER['PHP_SELF']) == 'institution.php' ? 'active' : '' ?>">
@@ -323,7 +332,7 @@ $ogType = $pageOgType ?? 'website';
                     <span class="drawer-nav-icon">🏠</span>
                     <span class="drawer-nav-text">Home Portal</span>
                 </a>
-                <a href="school.php" class="drawer-nav-link <?= basename($_SERVER['PHP_SELF']) == 'school.php' || basename($_SERVER['PHP_SELF']) == 'school-detail.php' ? 'active' : '' ?>">
+                <a href="school/" class="drawer-nav-link <?= (str_contains($_SERVER['SCRIPT_NAME'] ?? '', '/school/') || str_contains($_SERVER['REQUEST_URI'] ?? '', '/school') || basename($_SERVER['PHP_SELF']) == 'school.php' || basename($_SERVER['PHP_SELF']) == 'school-detail.php') ? 'active' : '' ?>">
                     <span class="drawer-nav-icon">🏫</span>
                     <span class="drawer-nav-text">CBSE Schools Directory</span>
                     <span class="drawer-badge">33,233</span>

@@ -57,7 +57,9 @@ Comprehensive national directory of **72,800+** higher education institutions ac
 ## 📁 Project Structure
 
 ```
+├── api.php                 # Unified RESTful JSON API (Search, Directories, Leads, Stats)
 ├── api/
+│   ├── index.php             # Forwarder to root api.php
 │   └── districts.php         # Fast JSON endpoint for cascading district dropdowns
 ├── assets/
 │   ├── css/style.css         # Online Education responsive design system

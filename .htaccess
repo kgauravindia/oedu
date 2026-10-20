@@ -17,7 +17,8 @@
     RewriteRule ^institute/([^/]+)/?$ institute-detail.php?slug=$1 [L,QSA]
 
     # Clean URL for School: /school/cbse-school-name
-    RewriteRule ^school/([^/]+)/?$ school-detail.php?slug=$1 [L,QSA]
+    RewriteRule ^school/([^/]+)/?$ school/school-detail.php?slug=$1 [L,QSA]
+    RewriteRule ^school\.php$ school/ [L,R=301]
 
     # Clean URL for Law College: /law-college/law-college-name
     RewriteRule ^law-college/([^/]+)/?$ law-college-detail.php?slug=$1 [L,QSA]
