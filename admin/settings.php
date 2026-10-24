@@ -29,7 +29,7 @@ $defaultSettings = [
     'seo_keywords' => 'Universities in India, AISHE Colleges, CBSE Schools, BCI Law Colleges, Standalone Institutes, Entrance Exams, CUET Cutoff, NIRF Ranking, Higher Education India',
     'google_site_verification' => '',
     'bing_site_verification' => '',
-    'google_analytics_id' => '',
+    'google_analytics_id' => 'G-HN2E45GF5T',
 ];
 
 // Handle Save

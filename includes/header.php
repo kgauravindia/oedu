@@ -111,16 +111,18 @@ $ogType = $pageOgType ?? 'website';
     </script>
     <?php endif; ?>
 
-    <?php if (!empty($seoSettings['google_analytics_id'])): ?>
+    <?php 
+    $gaId = !empty($seoSettings['google_analytics_id']) ? $seoSettings['google_analytics_id'] : 'G-HN2E45GF5T';
+    ?>
     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=<?= htmlspecialchars($seoSettings['google_analytics_id']) ?>"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?= htmlspecialchars($gaId) ?>"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', '<?= htmlspecialchars($seoSettings['google_analytics_id']) ?>');
+
+      gtag('config', '<?= htmlspecialchars($gaId) ?>');
     </script>
-    <?php endif; ?>
 </head>
 <body>
 
