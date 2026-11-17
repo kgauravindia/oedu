@@ -350,11 +350,17 @@ $branchesList = getGitBranchesList($repoDir);
             <!-- Server Environment Diagnostic Banners -->
             <?php if (empty($summary['exec_enabled'])): ?>
                 <div class="alert alert-danger py-3 px-3 mb-4 shadow-sm rounded-3" role="alert">
-                    <h6 class="fw-bold mb-1"><i class="fas fa-exclamation-triangle me-2"></i>PHP exec() Function is Disabled on This Server</h6>
-                    <p class="mb-0 small">
-                        The PHP <code>exec()</code> function is currently disabled in your server's <code>php.ini</code> (common on shared cPanel hosting).
-                        To execute Git commands via this web interface, enable <code>exec</code> in <strong>cPanel &gt; Select PHP Version &gt; Options &gt; disable_functions</strong>, or manage Git updates using <strong>cPanel &gt; Git Version Control</strong> or SSH.
+                    <h6 class="fw-bold mb-1"><i class="fas fa-exclamation-triangle me-2"></i>PHP Shell Functions Disabled on Server</h6>
+                    <p class="mb-2 small">
+                        PHP execution functions (<code>exec</code>, <code>proc_open</code>, <code>shell_exec</code>) are restricted under <code>disable_functions</code> in your hosting server's <code>php.ini</code>.
                     </p>
+                    <div class="small p-2 bg-white rounded border border-danger-subtle text-dark">
+                        <strong>To enable web-based updates in cPanel (Takes 1 minute):</strong><br>
+                        1. Log into your hosting <strong>cPanel</strong> &gt; search for <strong>Select PHP Version</strong> (or <strong>MultiPHP INI Editor</strong>).<br>
+                        2. Switch to the <strong>Options</strong> tab.<br>
+                        3. Find <strong>disable_functions</strong> &gt; remove <code>exec</code> and <code>proc_open</code> from the list &gt; click <strong>Save</strong>.<br>
+                        <span class="text-muted mt-1 d-block"><em>Tip: You can also manage updates directly using <strong>cPanel &gt; Git Version Control</strong> by clicking "Update from Remote".</em></span>
+                    </div>
                 </div>
             <?php elseif (empty($summary['has_dot_git'])): ?>
                 <div class="alert alert-warning py-3 px-3 mb-4 shadow-sm rounded-3" role="alert">

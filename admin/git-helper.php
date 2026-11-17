@@ -6,15 +6,92 @@ if (!defined('REPO_DIR')) {
 }
 
 /**
- * Check if the PHP exec() function is enabled and executable on this server.
+ * Check if a specific PHP execution function is allowed.
  */
-function isExecEnabled(): bool {
-    if (!function_exists('exec')) {
+function isFunctionAllowed(string $func): bool {
+    if (!function_exists($func)) {
         return false;
     }
     $disabled = explode(',', (string)ini_get('disable_functions'));
     $disabled = array_map('trim', $disabled);
-    return !in_array('exec', $disabled);
+    return !in_array($func, $disabled, true);
+}
+
+/**
+ * Check if any CLI shell execution method is available.
+ */
+function isExecEnabled(): bool {
+    return isFunctionAllowed('proc_open') 
+        || isFunctionAllowed('exec') 
+        || isFunctionAllowed('shell_exec') 
+        || isFunctionAllowed('passthru') 
+        || isFunctionAllowed('popen');
+}
+
+/**
+ * Execute command through whichever function is enabled on the hosting server.
+ */
+function executeShellCommand(string $cmd): array {
+    // 1. Try proc_open (cleanest, captures stdout & stderr)
+    if (isFunctionAllowed('proc_open')) {
+        $descriptors = [
+            0 => ['pipe', 'r'],
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w']
+        ];
+        $process = @proc_open($cmd, $descriptors, $pipes);
+        if (is_resource($process)) {
+            fclose($pipes[0]);
+            $stdout = stream_get_contents($pipes[1]);
+            $stderr = stream_get_contents($pipes[2]);
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+            $returnCode = proc_close($process);
+            $output = trim($stdout . ($stderr ? "\n" . $stderr : ''));
+            return ['code' => $returnCode, 'output' => $output];
+        }
+    }
+
+    // 2. Try exec
+    if (isFunctionAllowed('exec')) {
+        $lines = [];
+        $code = 0;
+        @exec($cmd, $lines, $code);
+        return ['code' => $code, 'output' => implode("\n", $lines)];
+    }
+
+    // 3. Try shell_exec
+    if (isFunctionAllowed('shell_exec')) {
+        $out = @shell_exec($cmd);
+        return ['code' => ($out !== null ? 0 : 1), 'output' => (string)$out];
+    }
+
+    // 4. Try passthru
+    if (isFunctionAllowed('passthru')) {
+        ob_start();
+        $code = 0;
+        @passthru($cmd, $code);
+        $out = ob_get_clean();
+        return ['code' => $code, 'output' => (string)$out];
+    }
+
+    // 5. Try popen
+    if (isFunctionAllowed('popen')) {
+        $handle = @popen($cmd, 'r');
+        if ($handle) {
+            $out = '';
+            while (!feof($handle)) {
+                $out .= fread($handle, 4096);
+            }
+            $code = pclose($handle);
+            return ['code' => $code, 'output' => trim($out)];
+        }
+    }
+
+    return [
+        'code' => 127,
+        'output' => "Notice: Shell execution functions (proc_open, exec, shell_exec, passthru, popen) are disabled in php.ini on this server.\nPlease remove 'exec' from 'disable_functions' in cPanel > Select PHP Version > Options."
+    ];
 }
 
 /**
@@ -44,10 +121,8 @@ function getGitExecutable(): string {
     foreach ($candidates as $cand) {
         if ($cand === 'git') {
             if (isExecEnabled()) {
-                $test = [];
-                $ret = 0;
-                @exec("git --version 2>&1", $test, $ret);
-                if ($ret === 0) {
+                $test = executeShellCommand("git --version 2>&1");
+                if ($test['code'] === 0) {
                     $gitBin = 'git';
                     return $gitBin;
                 }
@@ -97,7 +172,7 @@ function runGitCommand(string $cmd, ?string $repoDir = null, ?string $token = nu
     if (!isExecEnabled()) {
         return [
             'code' => 127,
-            'output' => "Notice: PHP exec() function is disabled in php.ini on this server.\nPlease enable 'exec' in cPanel > Select PHP Version > Extensions, or use cPanel Git Version Control.",
+            'output' => "Notice: Shell execution functions are disabled in php.ini on this server.\nPlease enable 'exec' in cPanel > Select PHP Version > Options (disable_functions), or use cPanel Git Version Control.",
             'cmd' => $cmd
         ];
     }
@@ -123,17 +198,15 @@ function runGitCommand(string $cmd, ?string $repoDir = null, ?string $token = nu
         $fullCommand = "export GIT_TERMINAL_PROMPT=0 && cd {$safeRepoDir} && {$safeCmd} 2>&1";
     }
     
-    $output = [];
-    $returnCode = 0;
-    @exec($fullCommand, $output, $returnCode);
+    $res = executeShellCommand($fullCommand);
     
-    $outText = implode("\n", $output);
+    $outText = $res['output'];
     if (!empty($token)) {
         $outText = str_replace($token, '***TOKEN***', $outText);
     }
     
     return [
-        'code' => $returnCode,
+        'code' => $res['code'],
         'output' => $outText,
         'cmd' => $cmd
     ];
@@ -160,7 +233,7 @@ function getGitSummary(?string $repoDir = null, ?string $token = null): array {
                 'hash' => '',
                 'author' => '',
                 'ago' => '',
-                'msg' => $hasDotGit ? 'Git CLI not executable' : 'No .git directory found on server',
+                'msg' => $hasDotGit ? 'Shell execution disabled in php.ini' : 'No .git directory found on server',
                 'date' => ''
             ],
             'changed_files' => [],
@@ -338,7 +411,7 @@ function getGitBranchesList(?string $repoDir = null): array {
 function getGitDiff(?string $file = null, ?string $repoDir = null): string {
     $repoDir = $repoDir ?: REPO_DIR;
     if (!isExecEnabled() || !is_dir($repoDir . '/.git')) {
-        return 'Git CLI or .git directory unavailable on server.';
+        return 'Shell execution or .git directory unavailable on server.';
     }
     if ($file) {
         $safeFile = escapeshellarg($file);
@@ -359,8 +432,8 @@ function performGitUpdate(string $branch = 'main', ?string $token = null, bool $
         return [
             'success' => false,
             'code' => 127,
-            'log' => "PHP exec() is disabled on this server. Contact your hosting provider to enable exec() or use cPanel Git Version Control.",
-            'message' => "Update failed: PHP exec() function is disabled on this server."
+            'log' => "Shell execution is disabled on this server. Enable 'exec' in cPanel > Select PHP Version > Options, or pull via cPanel Git Version Control.",
+            'message' => "Update failed: Shell execution is disabled on this server."
         ];
     }
     
