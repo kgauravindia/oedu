@@ -354,12 +354,19 @@ $branchesList = getGitBranchesList($repoDir);
                     <p class="mb-2 small">
                         PHP execution functions (<code>exec</code>, <code>proc_open</code>, <code>shell_exec</code>) are restricted under <code>disable_functions</code> in your hosting server's <code>php.ini</code>.
                     </p>
-                    <div class="small p-2 bg-white rounded border border-danger-subtle text-dark">
-                        <strong>To enable web-based updates in cPanel (Takes 1 minute):</strong><br>
-                        1. Log into your hosting <strong>cPanel</strong> &gt; search for <strong>Select PHP Version</strong> (or <strong>MultiPHP INI Editor</strong>).<br>
-                        2. Switch to the <strong>Options</strong> tab.<br>
-                        3. Find <strong>disable_functions</strong> &gt; remove <code>exec</code> and <code>proc_open</code> from the list &gt; click <strong>Save</strong>.<br>
-                        <span class="text-muted mt-1 d-block"><em>Tip: You can also manage updates directly using <strong>cPanel &gt; Git Version Control</strong> by clicking "Update from Remote".</em></span>
+                    <div class="small p-3 bg-white rounded border border-danger-subtle text-dark">
+                        <strong class="text-danger"><i class="fas fa-server me-1"></i> Hostinger hPanel Fix (Takes 1 minute):</strong><br>
+                        <ol class="ps-3 mb-2 mt-1">
+                            <li>Log into <a href="https://hpanel.hostinger.com" target="_blank" class="fw-bold text-primary text-decoration-none">Hostinger hPanel ↗</a> and click <strong>Manage</strong> next to <code>oedu.in</code>.</li>
+                            <li>In the left sidebar search bar, type <strong>PHP Configuration</strong> (under <strong>Advanced</strong>).</li>
+                            <li>Click the <strong>PHP Options</strong> tab at the top.</li>
+                            <li>Scroll down to find <strong>disable_functions</strong>.</li>
+                            <li>Remove <code>exec</code> and <code>proc_open</code> from that comma-separated list, then click <strong>Save</strong> at the bottom.</li>
+                            <li>Refresh this page, and 1-click Git updates will be enabled!</li>
+                        </ol>
+                        <hr class="my-2">
+                        <strong class="text-dark"><i class="fab fa-git-alt me-1 text-danger"></i> Alternative: Hostinger Built-in Git (No PHP changes needed):</strong><br>
+                        In Hostinger hPanel, go to <strong>Advanced &gt; Git</strong> &gt; click <strong>Deploy / Pull</strong> to update your files directly from GitHub.
                     </div>
                 </div>
             <?php elseif (empty($summary['has_dot_git'])): ?>
