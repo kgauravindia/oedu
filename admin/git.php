@@ -347,6 +347,24 @@ $branchesList = getGitBranchesList($repoDir);
                 </div>
             <?php endif; ?>
 
+            <!-- Server Environment Diagnostic Banners -->
+            <?php if (empty($summary['exec_enabled'])): ?>
+                <div class="alert alert-danger py-3 px-3 mb-4 shadow-sm rounded-3" role="alert">
+                    <h6 class="fw-bold mb-1"><i class="fas fa-exclamation-triangle me-2"></i>PHP exec() Function is Disabled on This Server</h6>
+                    <p class="mb-0 small">
+                        The PHP <code>exec()</code> function is currently disabled in your server's <code>php.ini</code> (common on shared cPanel hosting).
+                        To execute Git commands via this web interface, enable <code>exec</code> in <strong>cPanel &gt; Select PHP Version &gt; Options &gt; disable_functions</strong>, or manage Git updates using <strong>cPanel &gt; Git Version Control</strong> or SSH.
+                    </p>
+                </div>
+            <?php elseif (empty($summary['has_dot_git'])): ?>
+                <div class="alert alert-warning py-3 px-3 mb-4 shadow-sm rounded-3" role="alert">
+                    <h6 class="fw-bold mb-1"><i class="fas fa-folder-open me-2"></i>No .git Directory Found on Server</h6>
+                    <p class="mb-0 small">
+                        The <code>.git</code> repository directory was not detected in this server's web root. If your site was deployed via FTP or ZIP upload, initialize Git via SSH or link this directory in <strong>cPanel &gt; Git Version Control</strong> pointing to <code>https://github.com/kgauravindia/oedu.git</code>.
+                    </p>
+                </div>
+            <?php endif; ?>
+
             <!-- System Update Notification Banner -->
             <?php if ($behindCount > 0): ?>
                 <div class="alert alert-warning py-3 px-3 d-flex flex-wrap align-items-center justify-content-between mb-4 shadow-sm border-warning rounded-3" role="alert">
