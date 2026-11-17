@@ -1,10 +1,15 @@
 <?php
 require_once __DIR__ . '/auth_check.php';
 requireAdmin();
+require_once __DIR__ . '/git-helper.php';
 
 $pageTitle = 'Portal Settings - Online Education Admin';
 $msg = '';
 $msgType = 'success';
+$gitLogOutput = '';
+
+$repoDir = dirname(__DIR__);
+$githubToken = getSavedGithubToken($pdo);
 
 // Ensure settings table exists
 $pdo->exec("
@@ -32,23 +37,45 @@ $defaultSettings = [
     'google_analytics_id' => 'G-HN2E45GF5T',
 ];
 
-// Handle Save
+// Handle Actions (Portal Settings or Git System Update)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    foreach ($defaultSettings as $k => $v) {
-        $val = trim($_POST[$k] ?? '');
-        $stmt = $pdo->prepare("
-            INSERT INTO admin_settings (setting_key, setting_value) 
-            VALUES (:k, :v) 
-            ON DUPLICATE KEY UPDATE setting_value = :v2
-        ");
-        $stmt->execute([':k' => $k, ':v' => $val, ':v2' => $val]);
+    if (isset($_POST['git_action'])) {
+        $gitAct = $_POST['git_action'];
+        if ($gitAct === 'check_updates') {
+            $fetchRes = runGitCommand('git fetch origin', $repoDir, $githubToken);
+            $gitLogOutput = $fetchRes['output'] ?: 'Remote references successfully refreshed.';
+            $msg = ($fetchRes['code'] === 0) 
+                ? "Update check completed. Remote repository checked for updates." 
+                : "Failed to check remote updates. Check internet or credentials.";
+            $msgType = ($fetchRes['code'] === 0) ? 'success' : 'danger';
+        } elseif ($gitAct === 'update_now') {
+            $summary = getGitSummary($repoDir, $githubToken);
+            $branch = $summary['branch'] ?? 'main';
+            $updateRes = performGitUpdate($branch, $githubToken, true, $repoDir);
+            $gitLogOutput = $updateRes['log'];
+            $msg = $updateRes['message'];
+            $msgType = $updateRes['success'] ? 'success' : 'danger';
+        }
+    } else {
+        foreach ($defaultSettings as $k => $v) {
+            $val = trim($_POST[$k] ?? '');
+            $stmt = $pdo->prepare("
+                INSERT INTO admin_settings (setting_key, setting_value) 
+                VALUES (:k, :v) 
+                ON DUPLICATE KEY UPDATE setting_value = :v2
+            ");
+            $stmt->execute([':k' => $k, ':v' => $val, ':v2' => $val]);
+        }
+        $msg = "Portal settings have been updated successfully.";
     }
-    $msg = "Portal settings have been updated successfully.";
 }
 
 // Load current settings from database
 $dbSettings = $pdo->query("SELECT setting_key, setting_value FROM admin_settings")->fetchAll(PDO::FETCH_KEY_PAIR);
 $settings = array_merge($defaultSettings, $dbSettings);
+
+// Load Git Summary for Version Control Card
+$gitSummary = getGitSummary($repoDir, $githubToken);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -183,6 +210,80 @@ $settings = array_merge($defaultSettings, $dbSettings);
                 </div>
 
                 <div class="col-lg-4">
+                    <!-- System Update & Version Control Card -->
+                    <div class="data-table-card p-4 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                            <h6 class="fw-bold text-dark mb-0">
+                                <i class="fab fa-git-alt text-danger me-2"></i> System &amp; Git Updates
+                            </h6>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-2 py-1">
+                                <?= htmlspecialchars($gitSummary['version']) ?>
+                            </span>
+                        </div>
+
+                        <ul class="list-unstyled small mb-3">
+                            <li class="py-2 border-bottom d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Active Branch:</span>
+                                <code><?= htmlspecialchars($gitSummary['branch']) ?></code>
+                            </li>
+                            <li class="py-2 border-bottom d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Latest Commit:</span>
+                                <span class="font-monospace small text-primary fw-bold">
+                                    <?= htmlspecialchars($gitSummary['last_commit']['hash'] ?: 'None') ?>
+                                </span>
+                            </li>
+                            <li class="py-2 border-bottom d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Sync Status:</span>
+                                <?php if ($gitSummary['behind'] > 0): ?>
+                                    <span class="badge bg-danger rounded-pill px-2">
+                                        <?= $gitSummary['behind'] ?> commits behind
+                                    </span>
+                                <?php elseif ($gitSummary['ahead'] > 0): ?>
+                                    <span class="badge bg-info rounded-pill px-2">
+                                        <?= $gitSummary['ahead'] ?> unpushed
+                                    </span>
+                                <?php else: ?>
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                        <i class="fas fa-check-circle me-1"></i> Up to date
+                                    </span>
+                                <?php endif; ?>
+                            </li>
+                            <li class="py-2 border-bottom d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Working Tree:</span>
+                                <span>
+                                    <?= count($gitSummary['changed_files']) ?> <?= count($gitSummary['changed_files']) === 1 ? 'file changed' : 'files changed' ?>
+                                </span>
+                            </li>
+                        </ul>
+
+                        <?php if ($gitLogOutput): ?>
+                            <div class="mb-3 p-2 bg-dark text-light rounded small font-monospace" style="font-size: 0.76rem; max-height: 140px; overflow-y: auto; white-space: pre-wrap;">
+                                <?= htmlspecialchars($gitLogOutput) ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <div class="d-grid gap-2">
+                            <form method="POST">
+                                <input type="hidden" name="git_action" value="check_updates">
+                                <button type="submit" class="btn btn-outline-secondary btn-sm w-100 fw-bold">
+                                    <i class="fas fa-sync-alt me-1"></i> Check for Updates
+                                </button>
+                            </form>
+                            <form method="POST" onsubmit="return confirm('Update system from origin/<?= htmlspecialchars($gitSummary['branch']) ?>? Any local changes will be safely auto-stashed.');">
+                                <input type="hidden" name="git_action" value="update_now">
+                                <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold">
+                                    <i class="fas fa-cloud-download-alt me-1"></i> Update System Now
+                                    <?php if ($gitSummary['behind'] > 0): ?>
+                                        <span class="badge bg-danger ms-1"><?= $gitSummary['behind'] ?></span>
+                                    <?php endif; ?>
+                                </button>
+                            </form>
+                            <a href="git.php" class="btn btn-light border btn-sm text-dark fw-bold">
+                                <i class="fab fa-git-alt text-danger me-1"></i> Open Version Control Center →
+                            </a>
+                        </div>
+                    </div>
+
                     <div class="data-table-card p-4">
                         <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom">
                             <i class="fas fa-server text-secondary me-2"></i> Environment Health

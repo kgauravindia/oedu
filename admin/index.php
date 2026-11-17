@@ -34,6 +34,13 @@ try {
 } catch (PDOException $e) {
     $error = $e->getMessage();
 }
+
+$systemVersion = 'v1.0.0';
+try {
+    require_once __DIR__ . '/git-helper.php';
+    $gitQuick = getGitSummary(dirname(__DIR__));
+    $systemVersion = $gitQuick['version'] ?? 'v1.0.0';
+} catch (Throwable $e) {}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -260,6 +267,12 @@ try {
                             <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
                                 <span class="small text-muted">PHP Version</span>
                                 <span class="badge bg-light text-dark border"><?= PHP_VERSION ?></span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+                                <span class="small text-muted">System Release</span>
+                                <a href="git.php" class="badge bg-primary-subtle text-primary border border-primary-subtle text-decoration-none font-monospace" title="Manage Git & Releases">
+                                    <i class="fab fa-git-alt me-1 text-danger"></i><?= htmlspecialchars($systemVersion) ?>
+                                </a>
                             </div>
                             <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
                                 <span class="small text-muted">Active Database</span>

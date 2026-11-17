@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="oeduGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF6B00"/>
+      <stop offset="100%" stop-color="#FF8533"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#FF6B00" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <!-- Rounded Squircle Background -->
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#oeduGrad)" filter="url(#shadow)"/>
+  
+  <!-- Graduation Cap & Emblem Accent -->
+  <g fill="#FFFFFF">
+    <!-- Mortarboard Diamond -->
+    <polygon points="32,16 48,24 32,32 16,24"/>
+    <!-- Cap Underneath Base -->
+    <path d="M22,27.5 L22,35 C22,39 42,39 42,35 L42,27.5 L32,32.5 Z" opacity="0.95"/>
+    <!-- Tassel -->
+    <path d="M44,24.5 L46,36 L43,36.5 L44,24.5" fill="#FFE5D1"/>
+    <!-- Stylized 'O' Bottom Ring -->
+    <circle cx="32" cy="46" r="5" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>

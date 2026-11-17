@@ -112,7 +112,7 @@ if (isset($pdo)) {
 
         <a href="git.php" class="nav-link-custom <?= $currentPage === 'git.php' ? 'active' : '' ?>">
             <i class="fab fa-git-alt" style="color: #F05032;"></i>
-            <span>Git Version &amp; Sync</span>
+            <span>Git &amp; Version Updates</span>
         </a>
 
         <a href="sitemap.php" class="nav-link-custom <?= $currentPage === 'sitemap.php' ? 'active' : '' ?>">

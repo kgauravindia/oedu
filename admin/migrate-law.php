@@ -12,7 +12,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_sync'])) {
     $startTime = microtime(true);
     $log[] = "Starting `law_college` table synchronization at " . date('Y-m-d H:i:s') . "...";
 
-    $sqlFile = dirname(__DIR__) . '/law_college.sql';
+    $sqlFile = dirname(__DIR__) . '/database/law_college.sql';
+    if (!file_exists($sqlFile)) {
+        $sqlFile = dirname(__DIR__) . '/law_college.sql';
+    }
     if (!file_exists($sqlFile)) {
         $statusMsg = "Error: law_college.sql dump file not found on server at {$sqlFile}";
         $statusType = 'danger';

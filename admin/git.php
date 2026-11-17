@@ -1,85 +1,24 @@
 <?php
-// admin/git.php — Git Version Control, Remote Sync & Commit Manager
+// admin/git.php — Git Version Control, Remote Sync, Releases & System Update Manager
 require_once __DIR__ . '/auth_check.php';
 requireAdmin();
+require_once __DIR__ . '/git-helper.php';
 
-$pageTitle = 'Git Version & Sync — Online Education Admin';
+$pageTitle = 'Git Version Control & System Update — Online Education Admin';
 $msg = '';
 $msgType = 'success';
 $cmdOutput = '';
 
 $repoDir = dirname(__DIR__);
+$githubToken = getSavedGithubToken($pdo);
 
-// Locate Git binary automatically
-function getGitExecutable(): string {
-    static $gitBin = null;
-    if ($gitBin !== null) {
-        return $gitBin;
-    }
-    $candidates = [
-        'git',
-        'C:\Program Files\Git\cmd\git.exe',
-        'C:\Program Files\Git\bin\git.exe',
-        'C:\Program Files (x86)\Git\cmd\git.exe',
-        'D:\laragon\bin\git\bin\git.exe',
-        'D:\laragon\bin\git\cmd\git.exe',
-        'C:\laragon\bin\git\bin\git.exe',
-    ];
-    foreach ($candidates as $cand) {
-        if ($cand === 'git') {
-            $test = [];
-            $ret = 0;
-            @exec("git --version 2>&1", $test, $ret);
-            if ($ret === 0) {
-                $gitBin = 'git';
-                return $gitBin;
-            }
-        } elseif (file_exists($cand)) {
-            $gitBin = '"' . $cand . '"';
-            return $gitBin;
-        }
-    }
-    $gitBin = 'git';
-    return $gitBin;
+// Handle AJAX Diff Request
+if (isset($_GET['ajax']) && $_GET['ajax'] === 'diff') {
+    header('Content-Type: text/plain; charset=utf-8');
+    $file = trim($_GET['file'] ?? '');
+    echo getGitDiff($file, $repoDir);
+    exit;
 }
-
-// Helper to run git safely in repository root with non-interactive prompts and token support
-function runGitCommand(string $cmd, string $repoDir, ?string $token = null): array {
-    $gitExe = getGitExecutable();
-    $repoDirNorm = str_replace('/', DIRECTORY_SEPARATOR, $repoDir);
-    
-    // Normalize command with executable and safe.directory=*
-    $safeCmd = preg_replace('/^git\b/', "{$gitExe} -c safe.directory=* ", $cmd);
-    
-    // If token is provided, inject it for authenticated GitHub remote
-    if (!empty($token) && (str_contains($cmd, 'push') || str_contains($cmd, 'pull') || str_contains($cmd, 'fetch'))) {
-        $authRemote = "https://{$token}@github.com/kgauravindia/oedu.git";
-        $safeCmd = preg_replace('/\borigin\b/', "\"{$authRemote}\"", $safeCmd, 1);
-    }
-    
-    $fullCommand = "set \"GIT_TERMINAL_PROMPT=0\" && cd /d \"{$repoDirNorm}\" && {$safeCmd} 2>&1";
-    $output = [];
-    $returnCode = 0;
-    exec($fullCommand, $output, $returnCode);
-    
-    $outText = implode("\n", $output);
-    if (!empty($token)) {
-        $outText = str_replace($token, '***TOKEN***', $outText);
-    }
-    
-    return [
-        'code' => $returnCode,
-        'output' => $outText,
-        'cmd' => $cmd
-    ];
-}
-
-// Load saved GitHub token from admin_settings
-$githubToken = '';
-try {
-    $stmt = $pdo->query("SELECT setting_value FROM admin_settings WHERE setting_key = 'github_token' LIMIT 1");
-    $githubToken = (string)($stmt->fetchColumn() ?: '');
-} catch (Throwable $e) {}
 
 // Handle Git Actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -93,22 +32,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $githubToken = $tokenVal;
         $msg = "GitHub Personal Access Token saved successfully.";
         $msgType = 'success';
+
     } elseif ($action === 'fetch') {
         $res = runGitCommand('git fetch origin', $repoDir, $token);
-        $cmdOutput = "$ git fetch origin\n" . ($res['output'] ?: 'Repository fetched successfully. No new changes.');
-        $msg = ($res['code'] === 0) ? "Git fetch completed." : "Git fetch failed. Check credentials or console output.";
+        $cmdOutput = "$ git fetch origin\n" . ($res['output'] ?: 'Repository fetched successfully. No new updates found.');
+        $msg = ($res['code'] === 0) ? "Git fetch completed. Remote references are up to date." : "Git fetch failed. Check credentials or console output.";
         $msgType = ($res['code'] === 0) ? 'success' : 'danger';
-    } elseif ($action === 'pull') {
+
+    } elseif ($action === 'update' || $action === 'pull') {
         $branch = trim($_POST['branch'] ?? 'main');
-        $res = runGitCommand("git pull origin {$branch}", $repoDir, $token);
-        $cmdOutput = "$ git pull origin {$branch}\n" . $res['output'];
-        if ($res['code'] === 0) {
-            $msg = "Pulled successfully from origin/{$branch}.";
-            $msgType = 'success';
-        } else {
-            $msg = "Git pull failed. Check console output.";
-            $msgType = 'danger';
-        }
+        $autoStash = !empty($_POST['auto_stash']);
+        $updateRes = performGitUpdate($branch, $token, $autoStash, $repoDir);
+        $cmdOutput = $updateRes['log'];
+        $msg = $updateRes['message'];
+        $msgType = $updateRes['success'] ? 'success' : 'danger';
+
     } elseif ($action === 'push') {
         $branch = trim($_POST['branch'] ?? 'main');
         $res = runGitCommand("git push origin {$branch}", $repoDir, $token);
@@ -120,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $msg = "Git push failed. If GitHub requires authentication, save your Personal Access Token below.";
             $msgType = 'danger';
         }
+
     } elseif ($action === 'commit_push') {
         $commitMsg = trim($_POST['commit_message'] ?? '');
         $branch = trim($_POST['branch'] ?? 'main');
@@ -130,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if ($hasChanges) {
             if (empty($commitMsg)) {
-                $commitMsg = "Update portal features and verified institution directories";
+                $commitMsg = "System update: " . date('Y-m-d H:i');
             }
             $safeMsg = addslashes($commitMsg);
             
@@ -160,92 +99,115 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $msg = "Git push encountered an issue. See console output below.";
             $msgType = 'danger';
         }
+
+    } elseif ($action === 'create_tag') {
+        $tagName = trim($_POST['tag_name'] ?? '');
+        $tagMsg = trim($_POST['tag_message'] ?? '');
+        $pushTag = !empty($_POST['push_tag']);
+        
+        // Sanitize tag name
+        $tagName = preg_replace('/[^a-zA-Z0-9\.\-\_]/', '', $tagName);
+        if (empty($tagName)) {
+            $msg = "Invalid tag name. Please use a format like v1.0.1";
+            $msgType = 'danger';
+        } else {
+            $safeTagMsg = escapeshellarg($tagMsg ?: "Release {$tagName}");
+            $res = runGitCommand("git tag -a {$tagName} -m {$safeTagMsg}", $repoDir);
+            $log = "$ git tag -a {$tagName} -m {$safeTagMsg}\n" . ($res['output'] ?: 'Tag created.');
+            
+            if ($res['code'] === 0) {
+                if ($pushTag) {
+                    $pushRes = runGitCommand("git push origin {$tagName}", $repoDir, $token);
+                    $log .= "\n\n$ git push origin {$tagName}\n" . $pushRes['output'];
+                }
+                $cmdOutput = $log;
+                $msg = "Version release tag '{$tagName}' created successfully" . ($pushTag ? " and pushed to remote!" : "!");
+                $msgType = 'success';
+            } else {
+                $cmdOutput = $log;
+                $msg = "Failed to create tag '{$tagName}'. Check console output.";
+                $msgType = 'danger';
+            }
+        }
+
+    } elseif ($action === 'push_tags') {
+        $res = runGitCommand("git push origin --tags", $repoDir, $token);
+        $cmdOutput = "$ git push origin --tags\n" . $res['output'];
+        $msg = ($res['code'] === 0) ? "All version tags pushed to remote." : "Failed to push tags. Check credentials.";
+        $msgType = ($res['code'] === 0) ? 'success' : 'warning';
+
+    } elseif ($action === 'checkout') {
+        $target = trim($_POST['target'] ?? '');
+        $targetClean = preg_replace('/[^a-zA-Z0-9\.\-\_\/]/', '', $target);
+        if ($targetClean) {
+            $res = runGitCommand("git checkout {$targetClean}", $repoDir);
+            $cmdOutput = "$ git checkout {$targetClean}\n" . $res['output'];
+            $msg = ($res['code'] === 0) ? "Switched to '{$targetClean}' successfully." : "Checkout failed. Commit or stash your changes first.";
+            $msgType = ($res['code'] === 0) ? 'success' : 'danger';
+        }
+
+    } elseif ($action === 'create_branch') {
+        $newBranch = preg_replace('/[^a-zA-Z0-9\.\-\_]/', '', trim($_POST['branch_name'] ?? ''));
+        if ($newBranch) {
+            $res = runGitCommand("git checkout -b {$newBranch}", $repoDir);
+            $cmdOutput = "$ git checkout -b {$newBranch}\n" . $res['output'];
+            $msg = ($res['code'] === 0) ? "Branch '{$newBranch}' created and active." : "Failed to create branch.";
+            $msgType = ($res['code'] === 0) ? 'success' : 'danger';
+        }
+
+    } elseif ($action === 'discard_file') {
+        $file = trim($_POST['file'] ?? '');
+        if ($file) {
+            $safeFile = escapeshellarg($file);
+            $res = runGitCommand("git checkout -- {$safeFile}", $repoDir);
+            if ($res['code'] !== 0) {
+                $res = runGitCommand("git clean -f -- {$safeFile}", $repoDir);
+            }
+            $cmdOutput = "Discarded changes in: {$file}\n" . $res['output'];
+            $msg = "Changes in '{$file}' discarded.";
+            $msgType = 'info';
+        }
+
+    } elseif ($action === 'discard_all') {
+        $res = runGitCommand('git checkout -- . && git clean -fd', $repoDir);
+        $cmdOutput = "$ git checkout -- . && git clean -fd\n" . $res['output'];
+        $msg = "All uncommitted changes in working tree discarded.";
+        $msgType = 'warning';
+
     } elseif ($action === 'stash') {
         $res = runGitCommand('git stash', $repoDir);
         $cmdOutput = "$ git stash\n" . $res['output'];
         $msg = "Uncommitted changes stashed.";
         $msgType = 'info';
+
     } elseif ($action === 'stash_pop') {
         $res = runGitCommand('git stash pop', $repoDir);
         $cmdOutput = "$ git stash pop\n" . $res['output'];
         $msg = "Stashed changes restored.";
         $msgType = 'info';
+
+    } elseif ($action === 'soft_reset') {
+        $res = runGitCommand('git reset --soft HEAD~1', $repoDir);
+        $cmdOutput = "$ git reset --soft HEAD~1\n" . $res['output'];
+        $msg = "Undid last commit. Changes are preserved and staged.";
+        $msgType = 'info';
     }
 }
 
-// Query Current Git State
-$branchRes = runGitCommand('git rev-parse --abbrev-ref HEAD', $repoDir);
-$currentBranch = trim($branchRes['output'] ?: 'main');
-if (str_contains($currentBranch, "\n") || str_contains($currentBranch, 'fatal:')) {
-    $currentBranch = 'main';
-}
+// Fetch Full Git State
+$summary = getGitSummary($repoDir, $githubToken);
+$currentBranch = $summary['branch'];
+$currentVersion = $summary['version'];
+$remoteUrl = $summary['remote_url'];
+$githubBase = $summary['github_base'];
+$aheadCount = $summary['ahead'];
+$behindCount = $summary['behind'];
+$lastCommit = $summary['last_commit'];
+$changedFiles = $summary['changed_files'];
 
-$remoteRes = runGitCommand('git remote get-url origin', $repoDir);
-$remoteUrl = trim($remoteRes['output'] ?: '');
-if (str_contains($remoteUrl, 'fatal:')) {
-    $remoteUrl = 'https://github.com/kgauravindia/oedu.git';
-}
-
-// Calculate Ahead / Behind commits vs origin
-$aheadCount = 0;
-$behindCount = 0;
-try {
-    $aheadRes = runGitCommand("git rev-list --count origin/{$currentBranch}..HEAD", $repoDir);
-    if ($aheadRes['code'] === 0) {
-        $aheadCount = (int)trim($aheadRes['output']);
-    }
-    $behindRes = runGitCommand("git rev-list --count HEAD..origin/{$currentBranch}", $repoDir);
-    if ($behindRes['code'] === 0) {
-        $behindCount = (int)trim($behindRes['output']);
-    }
-} catch (Throwable $e) {}
-
-$lastCommitRes = runGitCommand('git log -1 --format="%h|%an|%ar|%s|%cd"', $repoDir);
-$lastCommitParts = explode('|', trim($lastCommitRes['output'] ?: ''));
-$lastCommit = [
-    'hash' => $lastCommitParts[0] ?? '',
-    'author' => $lastCommitParts[1] ?? '',
-    'ago' => $lastCommitParts[2] ?? '',
-    'msg' => $lastCommitParts[3] ?? '',
-    'date' => $lastCommitParts[4] ?? ''
-];
-
-// Working tree changes
-$statusRes = runGitCommand('git status -s', $repoDir);
-$statusLines = array_filter(explode("\n", trim($statusRes['output'] ?: '')));
-$changedFiles = [];
-foreach ($statusLines as $line) {
-    $line = trim($line);
-    if (!$line) continue;
-    $statusType = substr($line, 0, 2);
-    $fileName = trim(substr($line, 2));
-    $changedFiles[] = [
-        'raw_status' => $statusType,
-        'file' => $fileName
-    ];
-}
-
-// Recent Commit History (Last 12 commits)
-$logRes = runGitCommand('git log -n 12 --format="%h|%an|%ar|%s"', $repoDir);
-$logLines = array_filter(explode("\n", trim($logRes['output'] ?: '')));
-$commitHistory = [];
-foreach ($logLines as $line) {
-    $p = explode('|', $line, 4);
-    if (count($p) >= 4) {
-        $commitHistory[] = [
-            'hash' => $p[0],
-            'author' => $p[1],
-            'ago' => $p[2],
-            'subject' => $p[3]
-        ];
-    }
-}
-
-// GitHub web commit prefix if remote is github
-$githubBase = '';
-if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
-    $githubBase = "https://github.com/{$m[1]}/{$m[2]}";
-}
+$commitHistory = getGitCommitHistory($repoDir, 15);
+$tagsList = getGitTagsList($repoDir);
+$branchesList = getGitBranchesList($repoDir);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -268,6 +230,16 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
             text-decoration: none;
             font-weight: 700;
         }
+        .git-tag-badge {
+            font-family: monospace;
+            font-size: 0.85rem;
+            background: #EEF2FF;
+            color: #4F46E5;
+            padding: 3px 8px;
+            border-radius: 6px;
+            border: 1px solid #C7D2FE;
+            font-weight: 700;
+        }
         .git-status-m { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
         .git-status-q { background: #E0F2FE; color: #075985; border: 1px solid #BAE6FD; }
         .git-status-d { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
@@ -283,6 +255,21 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
             overflow-y: auto;
             white-space: pre-wrap;
         }
+        .diff-container {
+            background: #0B0F19;
+            color: #F8FAFC;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.85rem;
+            padding: 1rem;
+            border-radius: 8px;
+            max-height: 480px;
+            overflow: auto;
+            white-space: pre-wrap;
+            line-height: 1.45;
+        }
+        .diff-add { color: #4ADE80; background: rgba(74, 222, 128, 0.1); display: block; }
+        .diff-del { color: #F87171; background: rgba(248, 113, 113, 0.1); display: block; }
+        .diff-hunk { color: #38BDF8; background: rgba(56, 189, 248, 0.1); display: block; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -294,41 +281,59 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
         <?php include __DIR__ . '/admin-header.php'; ?>
 
         <main class="admin-main">
-            <!-- Header bar -->
+            <!-- Header bar with primary action controls -->
             <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
                 <div>
                     <h4 class="fw-bold mb-1" style="color: #0F172A;">
-                        <i class="fab fa-git-alt text-danger me-2"></i> Git Version Control &amp; Remote Sync
+                        <i class="fab fa-git-alt text-danger me-2"></i> System Updates &amp; Git Version Control
                     </h4>
-                    <p class="text-muted small mb-0">Manage repository branch, inspect pending modifications, pull updates, and sync to remote repository.</p>
+                    <p class="text-muted small mb-0">Track release versions, inspect modifications, apply single-click system updates, and manage branches.</p>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
+                    <!-- Check for updates (Fetch) -->
                     <form method="POST" style="display: inline;">
                         <input type="hidden" name="action" value="fetch">
-                        <button type="submit" class="btn btn-outline-secondary btn-sm px-3 shadow-sm">
-                            <i class="fas fa-sync-alt me-1"></i> Git Fetch
+                        <button type="submit" class="btn btn-outline-secondary btn-sm px-3 shadow-sm" title="Check for remote commits">
+                            <i class="fas fa-sync-alt me-1"></i> Check Updates
                         </button>
                     </form>
-                    <form method="POST" onsubmit="return confirm('Pull latest updates from origin/<?= htmlspecialchars($currentBranch) ?>?');" style="display: inline;">
-                        <input type="hidden" name="action" value="pull">
+
+                    <!-- One-Click System Update (Pull) -->
+                    <form method="POST" onsubmit="return confirm('Update system from origin/<?= htmlspecialchars($currentBranch) ?>? Any uncommitted changes will be safely auto-stashed.');" style="display: inline;">
+                        <input type="hidden" name="action" value="update">
                         <input type="hidden" name="branch" value="<?= htmlspecialchars($currentBranch) ?>">
-                        <button type="submit" class="btn btn-outline-primary btn-sm px-3 shadow-sm">
-                            <i class="fas fa-cloud-download-alt me-1"></i> Git Pull
+                        <input type="hidden" name="auto_stash" value="1">
+                        <button type="submit" class="btn btn-primary btn-sm px-3 shadow-sm fw-bold">
+                            <i class="fas fa-cloud-download-alt me-1"></i> Update System
+                            <?php if ($behindCount > 0): ?>
+                                <span class="badge bg-danger ms-1"><?= $behindCount ?> New</span>
+                            <?php endif; ?>
                         </button>
                     </form>
+
+                    <!-- Git Push -->
                     <form method="POST" onsubmit="return confirm('Push all committed changes to origin/<?= htmlspecialchars($currentBranch) ?>?');" style="display: inline;">
                         <input type="hidden" name="action" value="push">
                         <input type="hidden" name="branch" value="<?= htmlspecialchars($currentBranch) ?>">
                         <button type="submit" class="btn btn-success btn-sm px-3 shadow-sm">
-                            <i class="fas fa-cloud-upload-alt me-1"></i> Git Push
+                            <i class="fas fa-cloud-upload-alt me-1"></i> Push
                             <?php if ($aheadCount > 0): ?>
                                 <span class="badge bg-white text-success ms-1"><?= $aheadCount ?></span>
                             <?php endif; ?>
                         </button>
                     </form>
+
+                    <!-- Stage, Commit & Push Modal -->
                     <button type="button" class="btn btn-primary-custom btn-sm px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#commitModal">
                         <i class="fas fa-plus-circle me-1"></i> Commit &amp; Push
                     </button>
+
+                    <!-- Version Tag / Release Modal -->
+                    <button type="button" class="btn btn-outline-primary btn-sm px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#createTagModal">
+                        <i class="fas fa-tag me-1"></i> Create Release
+                    </button>
+
+                    <!-- GitHub Authentication Token -->
                     <button type="button" class="btn btn-outline-dark btn-sm px-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#tokenModal" title="Configure GitHub Authentication Token">
                         <i class="fab fa-github me-1"></i> Token <?= $githubToken ? '✓' : '⚙' ?>
                     </button>
@@ -342,40 +347,72 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
                 </div>
             <?php endif; ?>
 
-            <!-- Sync Alert if Ahead or Behind -->
-            <?php if ($aheadCount > 0 || $behindCount > 0): ?>
-                <div class="alert alert-warning py-2 px-3 small d-flex align-items-center justify-content-between mb-4 shadow-sm" role="alert">
+            <!-- System Update Notification Banner -->
+            <?php if ($behindCount > 0): ?>
+                <div class="alert alert-warning py-3 px-3 d-flex flex-wrap align-items-center justify-content-between mb-4 shadow-sm border-warning rounded-3" role="alert">
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="font-size: 1.8rem; color: #D97706;">
+                            <i class="fas fa-arrow-circle-down"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark">System Update Available!</h6>
+                            <p class="mb-0 small text-muted">
+                                Remote repository has <strong><?= $behindCount ?> new commit(s)</strong> ready to be pulled into your installation.
+                            </p>
+                        </div>
+                    </div>
+                    <form method="POST" onsubmit="return confirm('Update system to latest version now?');" class="mt-2 mt-md-0">
+                        <input type="hidden" name="action" value="update">
+                        <input type="hidden" name="branch" value="<?= htmlspecialchars($currentBranch) ?>">
+                        <input type="hidden" name="auto_stash" value="1">
+                        <button type="submit" class="btn btn-warning btn-sm px-3 fw-bold">
+                            <i class="fas fa-download me-1"></i> Apply Update Now (<?= $behindCount ?> commits)
+                        </button>
+                    </form>
+                </div>
+            <?php elseif ($aheadCount > 0): ?>
+                <div class="alert alert-info py-2 px-3 small d-flex align-items-center justify-content-between mb-4 shadow-sm rounded-3" role="alert">
                     <div>
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <?php if ($aheadCount > 0 && $behindCount > 0): ?>
-                            Your local branch has <strong><?= $aheadCount ?> unpushed commit(s)</strong> and is <strong><?= $behindCount ?> commit(s) behind</strong> origin.
-                        <?php elseif ($aheadCount > 0): ?>
-                            Your local branch has <strong><?= $aheadCount ?> unpushed commit(s)</strong> ready to push to remote.
-                        <?php else: ?>
-                            Your local branch is <strong><?= $behindCount ?> commit(s) behind</strong> remote. Run Git Pull to update.
-                        <?php endif; ?>
+                        <i class="fas fa-cloud-upload-alt me-2 text-primary"></i>
+                        Your local branch has <strong><?= $aheadCount ?> unpushed commit(s)</strong> ready to sync with GitHub remote.
                     </div>
-                    <div class="d-flex gap-2">
-                        <?php if ($behindCount > 0): ?>
-                            <form method="POST" style="display: inline;">
-                                <input type="hidden" name="action" value="pull">
-                                <input type="hidden" name="branch" value="<?= htmlspecialchars($currentBranch) ?>">
-                                <button type="submit" class="btn btn-warning btn-sm py-0 px-2 fw-bold">Pull <?= $behindCount ?> commit(s)</button>
-                            </form>
-                        <?php endif; ?>
-                        <?php if ($aheadCount > 0): ?>
-                            <form method="POST" style="display: inline;">
-                                <input type="hidden" name="action" value="push">
-                                <input type="hidden" name="branch" value="<?= htmlspecialchars($currentBranch) ?>">
-                                <button type="submit" class="btn btn-success btn-sm py-0 px-2 fw-bold">Push <?= $aheadCount ?> commit(s)</button>
-                            </form>
-                        <?php endif; ?>
+                    <form method="POST" style="display: inline;">
+                        <input type="hidden" name="action" value="push">
+                        <input type="hidden" name="branch" value="<?= htmlspecialchars($currentBranch) ?>">
+                        <button type="submit" class="btn btn-primary btn-sm py-1 px-3 fw-bold">Push <?= $aheadCount ?> commit(s)</button>
+                    </form>
+                </div>
+            <?php else: ?>
+                <div class="alert alert-success py-2 px-3 small d-flex align-items-center justify-content-between mb-4 shadow-sm rounded-3" role="alert">
+                    <div>
+                        <i class="fas fa-check-circle me-2 text-success"></i>
+                        System is up to date on <strong>origin/<?= htmlspecialchars($currentBranch) ?></strong>. (Version: <strong><?= htmlspecialchars($currentVersion) ?></strong>).
                     </div>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">All Synchronized</span>
                 </div>
             <?php endif; ?>
 
             <!-- Metrics Cards -->
             <div class="row g-3 mb-4">
+                <!-- Release Version -->
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: #4F46E5;">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">System Version</span>
+                            <h4 class="stat-value text-indigo mb-0 font-monospace" style="color: #4F46E5;"><?= htmlspecialchars($currentVersion) ?></h4>
+                            <div class="d-flex align-items-center gap-1 mt-1">
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.68rem;">
+                                    <?= count($tagsList) ?> <?= count($tagsList) === 1 ? 'Release Tag' : 'Release Tags' ?>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Branch -->
                 <div class="col-12 col-sm-6 col-xl-3">
                     <div class="stat-card">
                         <div class="stat-icon" style="background: rgba(240, 80, 50, 0.1); color: #F05032;">
@@ -395,24 +432,7 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
                     </div>
                 </div>
 
-                <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: rgba(56, 189, 248, 0.1); color: #0284C7;">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="stat-details">
-                            <span class="stat-label">Latest Commit</span>
-                            <div class="d-flex align-items-center gap-2 mt-1">
-                                <span class="git-hash-badge"><?= htmlspecialchars($lastCommit['hash'] ?: 'None') ?></span>
-                                <small class="text-muted" style="font-size: 0.75rem;"><?= htmlspecialchars($lastCommit['ago'] ?: '') ?></small>
-                            </div>
-                            <small class="text-dark fw-semibold text-truncate d-block" style="font-size: 0.72rem;" title="<?= htmlspecialchars($lastCommit['msg']) ?>">
-                                <?= htmlspecialchars(substr($lastCommit['msg'], 0, 32)) ?>...
-                            </small>
-                        </div>
-                    </div>
-                </div>
-
+                <!-- Working Tree Status -->
                 <div class="col-12 col-sm-6 col-xl-3">
                     <div class="stat-card">
                         <div class="stat-icon" style="background: <?= count($changedFiles) > 0 ? 'rgba(245, 158, 11, 0.1)' : 'rgba(16, 185, 129, 0.1)' ?>; color: <?= count($changedFiles) > 0 ? '#D97706' : '#059669' ?>;">
@@ -430,9 +450,10 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
                     </div>
                 </div>
 
+                <!-- Remote Target -->
                 <div class="col-12 col-sm-6 col-xl-3">
                     <div class="stat-card">
-                        <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: #4F46E5;">
+                        <div class="stat-icon" style="background: rgba(14, 165, 233, 0.1); color: #0284C7;">
                             <i class="fas fa-server"></i>
                         </div>
                         <div class="stat-details">
@@ -456,8 +477,8 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
             <?php if ($cmdOutput): ?>
                 <div class="card border-0 shadow-sm rounded-3 mb-4">
                     <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-2 px-3">
-                        <span class="small fw-bold"><i class="fas fa-terminal me-2 text-warning"></i>Console Output</span>
-                        <span class="badge bg-secondary">exit code: <?= $res['code'] ?? 0 ?></span>
+                        <span class="small fw-bold"><i class="fas fa-terminal me-2 text-warning"></i>Execution Console</span>
+                        <button type="button" class="btn btn-sm btn-outline-light py-0 px-2" onclick="this.closest('.card').remove();">&times; Close</button>
                     </div>
                     <div class="card-body p-0">
                         <div class="console-output"><?= htmlspecialchars($cmdOutput) ?></div>
@@ -465,22 +486,67 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
                 </div>
             <?php endif; ?>
 
-            <div class="row g-4">
-                <!-- Left: Uncommitted Changed Files -->
-                <div class="col-12 col-lg-6">
-                    <div class="card border-0 shadow-sm rounded-3 h-100">
-                        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <!-- Navigation Tabs -->
+            <ul class="nav nav-pills mb-4 gap-2" id="gitTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active px-3 py-2 fw-semibold" id="changes-tab" data-bs-toggle="pill" data-bs-target="#tab-changes" type="button">
+                        <i class="fas fa-edit me-1"></i> Working Tree (<?= count($changedFiles) ?>)
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link px-3 py-2 fw-semibold" id="history-tab" data-bs-toggle="pill" data-bs-target="#tab-history" type="button">
+                        <i class="fas fa-history me-1"></i> Commit History
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link px-3 py-2 fw-semibold" id="tags-tab" data-bs-toggle="pill" data-bs-target="#tab-tags" type="button">
+                        <i class="fas fa-tags me-1"></i> Release Versions (<?= count($tagsList) ?>)
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link px-3 py-2 fw-semibold" id="branches-tab" data-bs-toggle="pill" data-bs-target="#tab-branches" type="button">
+                        <i class="fas fa-code-branch me-1"></i> Branches
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="gitTabsContent">
+                <!-- TAB 1: Working Tree Changes -->
+                <div class="tab-pane fade show active" id="tab-changes" role="tabpanel">
+                    <div class="card border-0 shadow-sm rounded-3">
+                        <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
                             <div>
                                 <h6 class="fw-bold mb-0 text-dark">
-                                    <i class="fas fa-edit me-2 text-primary"></i>Working Tree Changes (<?= count($changedFiles) ?>)
+                                    <i class="fas fa-file-code me-2 text-primary"></i>Working Tree Changes (<?= count($changedFiles) ?>)
                                 </h6>
-                                <small class="text-muted">Modified, added, or deleted files since last commit</small>
+                                <small class="text-muted">Modified, untracked, or deleted files since last commit</small>
                             </div>
-                            <?php if (count($changedFiles) > 0): ?>
-                                <button type="button" class="btn btn-primary-custom btn-sm" data-bs-toggle="modal" data-bs-target="#commitModal">
-                                    <i class="fas fa-check me-1"></i>Sync All
-                                </button>
-                            <?php endif; ?>
+                            <div class="d-flex gap-2">
+                                <?php if (count($changedFiles) > 0): ?>
+                                    <form method="POST" style="display:inline;">
+                                        <input type="hidden" name="action" value="stash">
+                                        <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                            <i class="fas fa-archive me-1"></i> Stash
+                                        </button>
+                                    </form>
+                                    <form method="POST" onsubmit="return confirm('Discard ALL uncommitted changes permanently?');" style="display:inline;">
+                                        <input type="hidden" name="action" value="discard_all">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-undo me-1"></i> Discard All
+                                        </button>
+                                    </form>
+                                    <button type="button" class="btn btn-primary-custom btn-sm" data-bs-toggle="modal" data-bs-target="#commitModal">
+                                        <i class="fas fa-check me-1"></i> Commit &amp; Push All
+                                    </button>
+                                <?php else: ?>
+                                    <form method="POST" style="display:inline;">
+                                        <input type="hidden" name="action" value="stash_pop">
+                                        <button type="submit" class="btn btn-outline-secondary btn-sm" title="Restore stashed changes">
+                                            <i class="fas fa-box-open me-1"></i> Pop Stash
+                                        </button>
+                                    </form>
+                                <?php endif; ?>
+                            </div>
                         </div>
 
                         <div class="card-body p-0">
@@ -490,15 +556,16 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
                                         <i class="fas fa-check-circle"></i>
                                     </div>
                                     <h6 class="fw-bold text-dark">Working Tree is Clean</h6>
-                                    <p class="text-muted small mb-0">All changes have been committed and synced to git.</p>
+                                    <p class="text-muted small mb-0">All files have been committed and synced to git.</p>
                                 </div>
                             <?php else: ?>
-                                <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
+                                <div class="table-responsive">
                                     <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
                                         <thead class="bg-light text-muted" style="font-size: 0.75rem; text-transform: uppercase;">
                                             <tr>
                                                 <th class="ps-3">Status</th>
                                                 <th>File Path</th>
+                                                <th class="text-end pe-3">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -506,9 +573,11 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
                                                 $stat = trim($cf['raw_status']);
                                                 $badgeClass = 'git-status-m';
                                                 $label = 'Modified';
+                                                $canDiff = true;
                                                 if (strpos($stat, '?') !== false) {
                                                     $badgeClass = 'git-status-q';
                                                     $label = 'Untracked / New';
+                                                    $canDiff = false;
                                                 } elseif (strpos($stat, 'D') !== false) {
                                                     $badgeClass = 'git-status-d';
                                                     $label = 'Deleted';
@@ -523,6 +592,20 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
                                                     <td>
                                                         <code class="text-dark fw-bold" style="font-size: 0.82rem;"><?= htmlspecialchars($cf['file']) ?></code>
                                                     </td>
+                                                    <td class="text-end pe-3">
+                                                        <?php if ($canDiff): ?>
+                                                            <button type="button" class="btn btn-sm btn-outline-info py-0 px-2 me-1" onclick="viewDiff('<?= htmlspecialchars(addslashes($cf['file'])) ?>')">
+                                                                <i class="fas fa-file-diff me-1"></i> Diff
+                                                            </button>
+                                                        <?php endif; ?>
+                                                        <form method="POST" onsubmit="return confirm('Discard changes in <?= htmlspecialchars(addslashes($cf['file'])) ?>?');" style="display:inline;">
+                                                            <input type="hidden" name="action" value="discard_file">
+                                                            <input type="hidden" name="file" value="<?= htmlspecialchars($cf['file']) ?>">
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Revert changes">
+                                                                <i class="fas fa-undo"></i> Discard
+                                                            </button>
+                                                        </form>
+                                                    </td>
                                                 </tr>
                                             <?php endforeach; ?>
                                         </tbody>
@@ -533,32 +616,40 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
                     </div>
                 </div>
 
-                <!-- Right: Recent Commit History -->
-                <div class="col-12 col-lg-6">
-                    <div class="card border-0 shadow-sm rounded-3 h-100">
-                        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                <!-- TAB 2: Commit History -->
+                <div class="tab-pane fade" id="tab-history" role="tabpanel">
+                    <div class="card border-0 shadow-sm rounded-3">
+                        <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
                             <div>
                                 <h6 class="fw-bold mb-0 text-dark">
-                                    <i class="fas fa-history me-2 text-info"></i>Recent Commit History
+                                    <i class="fas fa-history me-2 text-info"></i>Commit History &amp; Log
                                 </h6>
                                 <small class="text-muted">Last <?= count($commitHistory) ?> commits on branch <?= htmlspecialchars($currentBranch) ?></small>
                             </div>
-                            <?php if ($githubBase): ?>
-                                <a href="<?= htmlspecialchars($githubBase) ?>/commits/<?= htmlspecialchars($currentBranch) ?>" target="_blank" class="btn btn-outline-secondary btn-sm" style="font-size: 0.78rem;">
-                                    GitHub Commits ↗
-                                </a>
-                            <?php endif; ?>
+                            <div class="d-flex gap-2">
+                                <form method="POST" onsubmit="return confirm('Soft-undo the last commit? (Changes will remain staged in your working directory)');" style="display:inline;">
+                                    <input type="hidden" name="action" value="soft_reset">
+                                    <button type="submit" class="btn btn-outline-warning btn-sm" title="Undo HEAD commit but keep changes">
+                                        <i class="fas fa-undo me-1"></i> Undo Last Commit
+                                    </button>
+                                </form>
+                                <?php if ($githubBase): ?>
+                                    <a href="<?= htmlspecialchars($githubBase) ?>/commits/<?= htmlspecialchars($currentBranch) ?>" target="_blank" class="btn btn-outline-secondary btn-sm">
+                                        GitHub Commits ↗
+                                    </a>
+                                <?php endif; ?>
+                            </div>
                         </div>
 
                         <div class="card-body p-0">
-                            <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
+                            <div class="table-responsive">
                                 <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
                                     <thead class="bg-light text-muted" style="font-size: 0.75rem; text-transform: uppercase;">
                                         <tr>
                                             <th class="ps-3">Commit</th>
                                             <th>Description</th>
                                             <th>Author</th>
-                                            <th class="text-end pe-3">Time</th>
+                                            <th class="text-end pe-3">Date</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -579,12 +670,14 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
                                                         <?php endif; ?>
                                                     </td>
                                                     <td>
-                                                        <div class="fw-bold text-dark text-truncate" style="max-width: 280px;" title="<?= htmlspecialchars($c['subject']) ?>">
+                                                        <div class="fw-bold text-dark text-truncate" style="max-width: 480px;" title="<?= htmlspecialchars($c['subject']) ?>">
                                                             <?= htmlspecialchars($c['subject']) ?>
                                                         </div>
                                                     </td>
                                                     <td class="text-muted small"><?= htmlspecialchars($c['author']) ?></td>
-                                                    <td class="text-end pe-3 text-muted small" style="white-space: nowrap;"><?= htmlspecialchars($c['ago']) ?></td>
+                                                    <td class="text-end pe-3 text-muted small" style="white-space: nowrap;">
+                                                        <span title="<?= htmlspecialchars($c['date'] ?? '') ?>"><?= htmlspecialchars($c['ago']) ?></span>
+                                                    </td>
                                                 </tr>
                                             <?php endforeach; ?>
                                         <?php endif; ?>
@@ -594,90 +687,365 @@ if (preg_match('/github\.com[:\/]([^\/]+)\/([^\/\.]+)/', $remoteUrl, $m)) {
                         </div>
                     </div>
                 </div>
-<!-- Modal for Commit & Push -->
-<div class="modal fade" id="commitModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <form method="POST" class="modal-content border-0 shadow">
-            <input type="hidden" name="action" value="commit_push">
-            <input type="hidden" name="branch" value="<?= htmlspecialchars($currentBranch) ?>">
 
-            <div class="modal-header bg-light">
-                <h6 class="modal-title fw-bold text-dark">
-                    <i class="fab fa-git-alt text-danger me-2"></i>Commit &amp; Push to origin/<?= htmlspecialchars($currentBranch) ?>
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+                <!-- TAB 3: Release Versions & Tags -->
+                <div class="tab-pane fade" id="tab-tags" role="tabpanel">
+                    <div class="card border-0 shadow-sm rounded-3">
+                        <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark">
+                                    <i class="fas fa-tags me-2 text-primary"></i>Release Versions &amp; Milestones
+                                </h6>
+                                <small class="text-muted">Manage system releases, version tags, and rollback targets</small>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <form method="POST" style="display:inline;">
+                                    <input type="hidden" name="action" value="push_tags">
+                                    <button type="submit" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-cloud-upload-alt me-1"></i> Push Tags to Remote
+                                    </button>
+                                </form>
+                                <button type="button" class="btn btn-primary-custom btn-sm" data-bs-toggle="modal" data-bs-target="#createTagModal">
+                                    <i class="fas fa-plus-circle me-1"></i> New Version Tag
+                                </button>
+                            </div>
+                        </div>
 
-            <div class="modal-body">
-                <div class="alert alert-info py-2 small mb-3">
-                    <i class="fas fa-info-circle me-1"></i> This will stage all files (<code>git add .</code>), create a commit if there are changes, and execute <code>git push origin <?= htmlspecialchars($currentBranch) ?></code>.
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label small fw-bold text-dark">Commit Message *</label>
-                    <input type="text" name="commit_message" required class="form-control" placeholder="e.g. Add BCI law colleges directory and XML sitemaps" value="Update portal features and verified institution directories">
-                </div>
-
-                <div class="text-muted small">
-                    <strong>Pending Files to Commit:</strong> <?= count($changedFiles) ?> change(s)
-                </div>
-            </div>
-
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary-custom btn-sm px-3">
-                    <i class="fas fa-check me-1"></i> Stage, Commit &amp; Push
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal for GitHub Personal Access Token (PAT) -->
-<div class="modal fade" id="tokenModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <form method="POST" class="modal-content border-0 shadow">
-            <input type="hidden" name="action" value="save_token">
-
-            <div class="modal-header bg-light">
-                <h6 class="modal-title fw-bold text-dark">
-                    <i class="fab fa-github me-2 text-dark"></i>GitHub Authentication &amp; PAT
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body">
-                <div class="alert alert-info py-2 small mb-3">
-                    <i class="fas fa-key me-1"></i> A <strong>Personal Access Token (classic or fine-grained)</strong> allows the web server to push and pull to your GitHub repository without interactive desktop logins.
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label small fw-bold text-dark">GitHub Personal Access Token (PAT)</label>
-                    <input type="password" name="github_token" class="form-control font-monospace" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" value="<?= htmlspecialchars($githubToken) ?>">
-                    <small class="text-muted">
-                        Need a token? <a href="https://github.com/settings/tokens/new" target="_blank" class="text-decoration-none">Generate token on GitHub ↗</a> (Scope: <code>repo</code>).
-                    </small>
-                </div>
-
-                <?php if ($githubToken): ?>
-                    <div class="alert alert-success py-2 small mb-0">
-                        <i class="fas fa-check-circle me-1"></i> A token is currently saved and active.
+                        <div class="card-body p-0">
+                            <?php if (empty($tagsList)): ?>
+                                <div class="text-center py-5">
+                                    <div class="mb-2" style="font-size: 2.2rem; color: #6366F1;">
+                                        <i class="fas fa-tag"></i>
+                                    </div>
+                                    <h6 class="fw-bold text-dark">No Version Tags Yet</h6>
+                                    <p class="text-muted small mb-3">Tag your first stable system version (e.g., v1.0.0).</p>
+                                    <button type="button" class="btn btn-primary-custom btn-sm" data-bs-toggle="modal" data-bs-target="#createTagModal">
+                                        Create Version v1.0.0
+                                    </button>
+                                </div>
+                            <?php else: ?>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                                        <thead class="bg-light text-muted" style="font-size: 0.75rem; text-transform: uppercase;">
+                                            <tr>
+                                                <th class="ps-3">Release Tag</th>
+                                                <th>Release Description</th>
+                                                <th>Created</th>
+                                                <th class="text-end pe-3">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($tagsList as $tg): ?>
+                                                <tr>
+                                                    <td class="ps-3" style="width: 130px;">
+                                                        <span class="git-tag-badge">
+                                                            <i class="fas fa-tag me-1 small"></i><?= htmlspecialchars($tg['name']) ?>
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="fw-bold text-dark"><?= htmlspecialchars($tg['subject'] ?: 'Release ' . $tg['name']) ?></div>
+                                                    </td>
+                                                    <td class="text-muted small"><?= htmlspecialchars($tg['date']) ?></td>
+                                                    <td class="text-end pe-3">
+                                                        <form method="POST" onsubmit="return confirm('Rollback/Switch repository to tag <?= htmlspecialchars($tg['name']) ?>?');" style="display:inline;">
+                                                            <input type="hidden" name="action" value="checkout">
+                                                            <input type="hidden" name="target" value="<?= htmlspecialchars($tg['name']) ?>">
+                                                            <button type="submit" class="btn btn-outline-secondary btn-sm py-0 px-2" title="Switch to this version">
+                                                                <i class="fas fa-history me-1"></i> Checkout
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                <?php else: ?>
-                    <div class="text-muted small">
-                        Leave blank if your system already has local SSH or system Git credentials configured.
+                </div>
+
+                <!-- TAB 4: Branch Management -->
+                <div class="tab-pane fade" id="tab-branches" role="tabpanel">
+                    <div class="card border-0 shadow-sm rounded-3">
+                        <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark">
+                                    <i class="fas fa-code-branch me-2 text-warning"></i>Repository Branches
+                                </h6>
+                                <small class="text-muted">Switch branches or spawn new feature branches</small>
+                            </div>
+                            <button type="button" class="btn btn-primary-custom btn-sm" data-bs-toggle="modal" data-bs-target="#createBranchModal">
+                                <i class="fas fa-plus me-1"></i> New Branch
+                            </button>
+                        </div>
+
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                                    <thead class="bg-light text-muted" style="font-size: 0.75rem; text-transform: uppercase;">
+                                        <tr>
+                                            <th class="ps-3">Branch Name</th>
+                                            <th>Status</th>
+                                            <th class="text-end pe-3">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($branchesList as $br): ?>
+                                            <tr>
+                                                <td class="ps-3">
+                                                    <code class="fw-bold text-dark" style="font-size: 0.85rem;">
+                                                        <i class="fas fa-code-branch me-1 text-muted"></i><?= htmlspecialchars($br['name']) ?>
+                                                    </code>
+                                                </td>
+                                                <td>
+                                                    <?php if ($br['is_current']): ?>
+                                                        <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                                            <i class="fas fa-check-circle me-1"></i> Active
+                                                        </span>
+                                                    <?php else: ?>
+                                                        <span class="badge bg-light text-muted border">Inactive</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="text-end pe-3">
+                                                    <?php if (!$br['is_current'] && !str_starts_with($br['name'], 'remotes/')): ?>
+                                                        <form method="POST" onsubmit="return confirm('Switch active branch to <?= htmlspecialchars($br['name']) ?>?');" style="display:inline;">
+                                                            <input type="hidden" name="action" value="checkout">
+                                                            <input type="hidden" name="target" value="<?= htmlspecialchars($br['name']) ?>">
+                                                            <button type="submit" class="btn btn-sm btn-outline-primary py-0 px-2">
+                                                                Switch
+                                                            </button>
+                                                        </form>
+                                                    <?php endif; ?>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                <?php endif; ?>
+                </div>
             </div>
 
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary-custom btn-sm px-3">
-                    <i class="fas fa-save me-1"></i> Save Token
-                </button>
+            <!-- Modal for Commit & Push -->
+            <div class="modal fade" id="commitModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <form method="POST" class="modal-content border-0 shadow">
+                        <input type="hidden" name="action" value="commit_push">
+                        <input type="hidden" name="branch" value="<?= htmlspecialchars($currentBranch) ?>">
+
+                        <div class="modal-header bg-light">
+                            <h6 class="modal-title fw-bold text-dark">
+                                <i class="fab fa-git-alt text-danger me-2"></i>Commit &amp; Push to origin/<?= htmlspecialchars($currentBranch) ?>
+                            </h6>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="alert alert-info py-2 small mb-3">
+                                <i class="fas fa-info-circle me-1"></i> This will stage all files (<code>git add .</code>), record a commit, and execute <code>git push origin <?= htmlspecialchars($currentBranch) ?></code>.
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-dark">Commit Message *</label>
+                                <input type="text" name="commit_message" required class="form-control" placeholder="e.g. Update portal features and institute directory" value="Update portal features and verified institution directories">
+                            </div>
+
+                            <div class="text-muted small">
+                                <strong>Pending Files to Commit:</strong> <?= count($changedFiles) ?> change(s)
+                            </div>
+                        </div>
+
+                        <div class="modal-footer bg-light">
+                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary-custom btn-sm px-3">
+                                <i class="fas fa-check me-1"></i> Stage, Commit &amp; Push
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </form>
-    </div>
-</div>
+
+            <!-- Modal for Creating Version Release Tag -->
+            <div class="modal fade" id="createTagModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <form method="POST" class="modal-content border-0 shadow">
+                        <input type="hidden" name="action" value="create_tag">
+
+                        <div class="modal-header bg-light">
+                            <h6 class="modal-title fw-bold text-dark">
+                                <i class="fas fa-tag text-primary me-2"></i>Create Version Release Tag
+                            </h6>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="alert alert-info py-2 small mb-3">
+                                <i class="fas fa-info-circle me-1"></i> Version tags bookmark milestones (e.g. <code>v1.0.1</code>) so you can track updates and rollback anytime.
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-dark">Version Tag Name *</label>
+                                <input type="text" name="tag_name" required class="form-control font-monospace" placeholder="e.g. v1.0.1" value="v1.0.1">
+                                <small class="text-muted">Use semantic versioning (e.g. v1.0.1, v1.1.0, v2.0.0).</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-dark">Release Title / Notes</label>
+                                <input type="text" name="tag_message" class="form-control" placeholder="e.g. Stable release with law colleges and CBSE schools" value="Stable portal release">
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="push_tag" value="1" id="pushTagCheck" checked>
+                                <label class="form-check-label small" for="pushTagCheck">
+                                    Push tag to remote GitHub repository immediately
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer bg-light">
+                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary-custom btn-sm px-3">
+                                <i class="fas fa-save me-1"></i> Create Release Tag
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal for Creating Branch -->
+            <div class="modal fade" id="createBranchModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <form method="POST" class="modal-content border-0 shadow">
+                        <input type="hidden" name="action" value="create_branch">
+
+                        <div class="modal-header bg-light">
+                            <h6 class="modal-title fw-bold text-dark">
+                                <i class="fas fa-code-branch text-warning me-2"></i>Create New Git Branch
+                            </h6>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-dark">Branch Name *</label>
+                                <input type="text" name="branch_name" required class="form-control font-monospace" placeholder="e.g. feature-admissions">
+                                <small class="text-muted">Alphanumeric, dashes, underscores only.</small>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer bg-light">
+                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary-custom btn-sm px-3">
+                                <i class="fas fa-check me-1"></i> Create &amp; Switch
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal for Diff Viewer -->
+            <div class="modal fade" id="diffModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header bg-dark text-white">
+                            <h6 class="modal-title fw-bold" id="diffModalTitle">
+                                <i class="fas fa-file-diff text-warning me-2"></i>File Diff
+                            </h6>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-0">
+                            <div id="diffContent" class="diff-container">Loading diff...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal for GitHub Personal Access Token (PAT) -->
+            <div class="modal fade" id="tokenModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <form method="POST" class="modal-content border-0 shadow">
+                        <input type="hidden" name="action" value="save_token">
+
+                        <div class="modal-header bg-light">
+                            <h6 class="modal-title fw-bold text-dark">
+                                <i class="fab fa-github me-2 text-dark"></i>GitHub Authentication &amp; PAT
+                            </h6>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="alert alert-info py-2 small mb-3">
+                                <i class="fas fa-key me-1"></i> A <strong>Personal Access Token (classic or fine-grained)</strong> allows the web server to push and pull to your GitHub repository without interactive desktop logins.
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-dark">GitHub Personal Access Token (PAT)</label>
+                                <input type="password" name="github_token" class="form-control font-monospace" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" value="<?= htmlspecialchars($githubToken) ?>">
+                                <small class="text-muted">
+                                    Need a token? <a href="https://github.com/settings/tokens/new" target="_blank" class="text-decoration-none">Generate token on GitHub ↗</a> (Scope: <code>repo</code>).
+                                </small>
+                            </div>
+
+                            <?php if ($githubToken): ?>
+                                <div class="alert alert-success py-2 small mb-0">
+                                    <i class="fas fa-check-circle me-1"></i> A token is currently saved and active.
+                                </div>
+                            <?php else: ?>
+                                <div class="text-muted small">
+                                    Leave blank if your system already has local SSH or system Git credentials configured.
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="modal-footer bg-light">
+                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary-custom btn-sm px-3">
+                                <i class="fas fa-save me-1"></i> Save Token
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+<script>
+function viewDiff(filePath) {
+    document.getElementById('diffModalTitle').innerHTML = '<i class="fas fa-file-diff text-warning me-2"></i>Diff: ' + filePath;
+    var container = document.getElementById('diffContent');
+    container.textContent = 'Loading diff...';
+    
+    var modal = new bootstrap.Modal(document.getElementById('diffModal'));
+    modal.show();
+
+    fetch('git.php?ajax=diff&file=' + encodeURIComponent(filePath))
+        .then(function(res) { return res.text(); })
+        .then(function(text) {
+            if (!text.trim()) {
+                container.textContent = 'No modifications detected in this file.';
+                return;
+            }
+            var lines = text.split('\n');
+            var html = '';
+            for (var i = 0; i < lines.length; i++) {
+                var l = lines[i];
+                var escaped = l.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                if (l.startsWith('+') && !l.startsWith('+++')) {
+                    html += '<span class="diff-add">' + escaped + '</span>';
+                } else if (l.startsWith('-') && !l.startsWith('---')) {
+                    html += '<span class="diff-del">' + escaped + '</span>';
+                } else if (l.startsWith('@@')) {
+                    html += '<span class="diff-hunk">' + escaped + '</span>';
+                } else {
+                    html += escaped + '\n';
+                }
+            }
+            container.innerHTML = html;
+        })
+        .catch(function(err) {
+            container.textContent = 'Failed to load diff: ' + err;
+        });
+}
+</script>
 
 <?php include __DIR__ . '/admin-footer.php'; ?>
